@@ -1,0 +1,1733 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cocomelon Dash - Geometry Dash with Level Editor</title>
+    <!-- Tailwind CSS for modern responsive styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Fredoka for playful Cocomelon UI, Inter for controls -->
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        body {
+            font-family: 'Fredoka', 'Inter', sans-serif;
+            background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 99%, #fecfef 100%);
+            overflow-x: hidden;
+            user-select: none;
+        }
+        /* Custom scrollbar for Editor sidebar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 133, 162, 0.6);
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 133, 162, 0.9);
+        }
+        /* Canvas styling */
+        canvas {
+            image-rendering: pixelated;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        /* Floating animations for Cocomelon feeling */
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-10px) rotate(3deg); }
+        }
+        .float-bubble {
+            animation: float 4s ease-in-out infinite;
+        }
+        .pulse-beat {
+            transition: transform 0.1s ease-out, filter 0.1s ease-out;
+        }
+    </style>
+</head>
+<body class="min-h-screen text-slate-800 flex flex-col items-center justify-center p-2 sm:p-4">
+
+    <!-- Main Outer Wrapper -->
+    <div class="w-full max-w-6xl bg-white/80 backdrop-blur-md rounded-3xl border-4 border-pink-300 shadow-2xl p-4 md:p-6 flex flex-col gap-4 relative overflow-hidden">
+        
+        <!-- Animated Background Clouds/Suns -->
+        <div class="absolute -top-10 -left-10 w-32 h-32 bg-yellow-200/40 rounded-full blur-xl pointer-events-none float-bubble"></div>
+        <div class="absolute -bottom-10 -right-10 w-40 h-40 bg-pink-200/40 rounded-full blur-xl pointer-events-none float-bubble" style="animation-delay: 2s;"></div>
+
+        <!-- Header Panel -->
+        <div class="flex flex-col md:flex-row justify-between items-center gap-4 z-10">
+            <div class="flex items-center gap-3">
+                <!-- Mascot Icon (Mini cute watermelon sketch) -->
+                <div class="w-14 h-14 bg-gradient-to-tr from-emerald-500 to-green-300 rounded-full border-4 border-pink-400 flex items-center justify-center shadow-lg relative shrink-0">
+                    <span class="text-3xl">🍉</span>
+                    <!-- Antennae -->
+                    <div class="absolute -top-2 left-3 w-1.5 h-3 bg-pink-400 rotate-12 rounded-full"></div>
+                    <div class="absolute -top-2 right-3 w-1.5 h-3 bg-pink-400 -rotate-12 rounded-full"></div>
+                </div>
+                <div>
+                    <h1 class="text-3xl md:text-4xl font-extrabold tracking-wider bg-clip-text text-transparent bg-gradient-to-r from-pink-500 via-purple-500 to-emerald-500 drop-shadow-sm">
+                        COCOMELON DASH
+                    </h1>
+                    <p class="text-xs md:text-sm text-pink-600 font-semibold uppercase tracking-widest">The Ultimate Playful Platformer</p>
+                </div>
+            </div>
+
+            <!-- Dashboard Options / Top bar -->
+            <div class="flex flex-wrap items-center gap-2">
+                <button id="btn-menu-play" class="px-4 py-2 bg-gradient-to-r from-emerald-400 to-green-500 text-white font-bold rounded-xl shadow-md hover:scale-105 active:scale-95 transition-all flex items-center gap-2">
+                    <i class="fa-solid fa-play"></i> Play Games
+                </button>
+                <button id="btn-menu-editor" class="px-4 py-2 bg-gradient-to-r from-pink-400 to-rose-500 text-white font-bold rounded-xl shadow-md hover:scale-105 active:scale-95 transition-all flex items-center gap-2">
+                    <i class="fa-solid fa-hammer"></i> Level Editor
+                </button>
+                <button id="btn-menu-settings" class="px-4 py-2 bg-gradient-to-r from-purple-400 to-indigo-500 text-white font-bold rounded-xl shadow-md hover:scale-105 active:scale-95 transition-all flex items-center gap-2">
+                    <i class="fa-solid fa-music"></i> Web Song API
+                </button>
+            </div>
+        </div>
+
+        <!-- Content Area -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 items-stretch">
+            
+            <!-- Left Panel / Main Game Canvas container (Cols 9) -->
+            <div class="lg:col-span-9 flex flex-col gap-3 relative">
+                
+                <!-- Game Frame and Screen -->
+                <div class="relative rounded-2xl overflow-hidden border-4 border-emerald-400 bg-slate-900 shadow-inner flex items-center justify-center">
+                    
+                    <!-- Pre-Canvas Loading/Start Overlay -->
+                    <div id="start-overlay" class="absolute inset-0 bg-slate-900/90 flex flex-col items-center justify-center p-6 text-center z-20">
+                        <div class="float-bubble text-6xl mb-4">🍉</div>
+                        <h2 class="text-white text-3xl font-bold mb-2">Welcome, Melon Jumper!</h2>
+                        <p class="text-pink-300 max-w-md text-sm mb-6">Jump, fly, and flip to the beat of nursery melodies. Click Play Level to start your melon adventure!</p>
+                        
+                        <div class="flex gap-4 flex-wrap justify-center">
+                            <button onclick="startGameWithLevel(0)" class="px-6 py-3 bg-gradient-to-r from-emerald-400 to-green-500 text-white font-bold text-lg rounded-2xl shadow-lg hover:brightness-110 active:scale-95 transition-all">
+                                Play Level 1 (Mel Meadows)
+                            </button>
+                            <button onclick="startGameWithLevel(1)" class="px-6 py-3 bg-gradient-to-r from-amber-400 to-orange-500 text-white font-bold text-lg rounded-2xl shadow-lg hover:brightness-110 active:scale-95 transition-all">
+                                Play Level 2 (Rainbow Jump)
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Main Gameplay Canvas -->
+                    <canvas id="game-canvas" width="800" height="400" class="w-full h-auto block max-w-full aspect-[2/1]"></canvas>
+
+                    <!-- In-Game Pause & Stats Overlay -->
+                    <div id="game-ui-overlay" class="absolute top-4 left-4 right-4 pointer-events-none flex justify-between items-center z-10 hidden">
+                        <!-- Left Stats -->
+                        <div class="bg-black/40 backdrop-blur-md px-3 py-1.5 rounded-xl text-white font-bold text-sm flex items-center gap-2">
+                            <span id="game-mode-tag" class="text-emerald-300">🍉 CUBE MODE</span>
+                            <span class="text-slate-400">|</span>
+                            <span id="level-title-display">Level 1</span>
+                        </div>
+                        
+                        <!-- Progress Bar Container -->
+                        <div class="w-1/3 bg-black/40 backdrop-blur-md px-2 py-1.5 rounded-xl flex items-center gap-2">
+                            <div class="w-full bg-slate-700 h-2.5 rounded-full overflow-hidden">
+                                <div id="game-progress-bar" class="bg-gradient-to-r from-pink-400 to-purple-500 h-full w-0 transition-all duration-100"></div>
+                            </div>
+                            <span id="game-progress-text" class="text-white font-bold text-xs">0%</span>
+                        </div>
+
+                        <!-- Right Actions -->
+                        <div class="flex items-center gap-2 pointer-events-auto">
+                            <!-- Practice Indicator -->
+                            <div id="practice-status-pill" class="hidden bg-emerald-500/90 text-white text-xs px-2.5 py-1 rounded-lg font-bold uppercase tracking-widest animate-pulse">
+                                Practice Mode
+                            </div>
+                            <button id="btn-pause-toggle" class="w-9 h-9 bg-black/40 hover:bg-black/60 text-white rounded-xl flex items-center justify-center transition-all">
+                                <i class="fa-solid fa-pause"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Custom Crash / Win Overlay Screen -->
+                    <div id="status-card-overlay" class="absolute inset-0 bg-black/70 flex flex-col items-center justify-center p-6 text-center z-20 hidden">
+                        <div id="status-icon" class="text-6xl mb-4">🏆</div>
+                        <h3 id="status-title" class="text-white text-3xl font-extrabold mb-2">LEVEL COMPLETE!</h3>
+                        <p id="status-desc" class="text-slate-300 text-sm max-w-sm mb-6">Outstanding skill! You made it all the way across the melon hills.</p>
+                        
+                        <div class="flex gap-4">
+                            <button id="btn-status-retry" class="px-6 py-2.5 bg-pink-500 hover:bg-pink-600 text-white font-bold rounded-xl transition-all">
+                                <i class="fa-solid fa-rotate-left mr-2"></i> Try Again
+                            </button>
+                            <button id="btn-status-close" class="px-6 py-2.5 bg-slate-600 hover:bg-slate-700 text-white font-bold rounded-xl transition-all">
+                                Back to Menu
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Mobile & Desktop On-screen Quick Controllers -->
+                <div class="grid grid-cols-12 gap-2 bg-pink-100/70 p-3 rounded-2xl border-2 border-pink-200">
+                    <div class="col-span-4 flex flex-col justify-center">
+                        <span class="text-xs font-bold text-pink-700 uppercase tracking-wider">Practice Tools</span>
+                        <div class="flex gap-1.5 mt-1">
+                            <button id="btn-practice-toggle" class="flex-1 py-2 bg-slate-600 hover:bg-slate-700 text-white rounded-xl text-xs font-bold transition-all uppercase flex items-center justify-center gap-1 shadow-sm">
+                                <i class="fa-solid fa-graduation-cap"></i> Practice
+                            </button>
+                            <button id="btn-checkpoint-place" class="px-3 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl text-xs font-bold transition-all flex items-center justify-center shadow-sm disabled:opacity-50" disabled>
+                                <i class="fa-solid fa-flag"></i> +
+                            </button>
+                            <button id="btn-checkpoint-clear" class="px-3 py-2 bg-rose-500 hover:bg-rose-600 text-white rounded-xl text-xs font-bold transition-all flex items-center justify-center shadow-sm disabled:opacity-50" disabled>
+                                <i class="fa-solid fa-trash-can"></i> -
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Huge Jump Controller for Touch & Quick Mouse Playing -->
+                    <button id="btn-action-jump" class="col-span-8 py-3 bg-gradient-to-r from-pink-500 to-rose-500 active:from-pink-600 active:to-rose-600 hover:scale-[1.01] active:scale-[0.98] transition-all text-white font-extrabold text-lg rounded-xl shadow-md flex items-center justify-center gap-2 border-b-4 border-rose-700">
+                        <i class="fa-solid fa-angles-up"></i> TAP / JUMP (SPACEBAR)
+                    </button>
+                </div>
+
+                <!-- Tip text -->
+                <p class="text-center text-xs text-pink-600/80 font-bold">
+                    💡 Tip: Practice Checkpoint Keyboard Keys: <kbd class="px-1.5 py-0.5 bg-white border rounded">Z</kbd> (Place Checkpoint) &bull; <kbd class="px-1.5 py-0.5 bg-white border rounded">X</kbd> (Remove Last)
+                </p>
+            </div>
+
+            <!-- Right Panel / Settings & Editor Controls (Cols 3) -->
+            <div class="lg:col-span-3 flex flex-col gap-4">
+                
+                <!-- LEVEL EDITOR SIDEBAR Panel -->
+                <div id="panel-editor" class="bg-pink-50/90 border-2 border-pink-200 rounded-2xl p-4 flex flex-col gap-4 h-full">
+                    <div class="flex justify-between items-center pb-2 border-b-2 border-pink-100">
+                        <span class="font-bold text-pink-800 text-lg flex items-center gap-2">
+                            <i class="fa-solid fa-hammer text-pink-500"></i> Level Editor
+                        </span>
+                        <!-- Status indicator inside editor -->
+                        <span class="px-2 py-0.5 bg-pink-200 text-pink-700 text-xs font-bold rounded-full">GRID MOD</span>
+                    </div>
+
+                    <!-- Tool Grid -->
+                    <div>
+                        <span class="text-xs font-bold text-pink-700 block mb-2 uppercase tracking-wide">Select Tile Element:</span>
+                        <div class="grid grid-cols-3 gap-2" id="editor-tile-selector">
+                            <!-- Items populated dynamically via JS (Block, Spike, Pad, Orb, Portal, End flag, Eraser) -->
+                        </div>
+                    </div>
+
+                    <!-- Grid Navigation & Controls -->
+                    <div class="flex flex-col gap-2 bg-white/70 p-2.5 rounded-xl border border-pink-200">
+                        <span class="text-xs font-bold text-pink-700 uppercase tracking-wide">Grid Scrolling</span>
+                        <div class="flex items-center gap-1">
+                            <button id="btn-grid-left" class="flex-1 py-1.5 bg-pink-100 hover:bg-pink-200 text-pink-800 font-bold rounded-lg text-xs transition-all">
+                                <i class="fa-solid fa-chevron-left"></i> Left
+                            </button>
+                            <span id="editor-scroll-display" class="px-2 font-mono text-xs font-bold text-pink-600">X: 0</span>
+                            <button id="btn-grid-right" class="flex-1 py-1.5 bg-pink-100 hover:bg-pink-200 text-pink-800 font-bold rounded-lg text-xs transition-all">
+                                Right <i class="fa-solid fa-chevron-right"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Level Editor General Operations -->
+                    <div class="flex flex-col gap-2 mt-auto">
+                        <div class="grid grid-cols-2 gap-2">
+                            <button id="btn-editor-playtest" class="py-2 bg-gradient-to-r from-emerald-400 to-green-500 text-white font-bold rounded-xl text-xs shadow hover:scale-105 transition-all">
+                                <i class="fa-solid fa-circle-play mr-1"></i> Playtest
+                            </button>
+                            <button id="btn-editor-clear" class="py-2 bg-rose-400 hover:bg-rose-500 text-white font-bold rounded-xl text-xs shadow transition-all">
+                                <i class="fa-solid fa-trash mr-1"></i> Clear Canvas
+                            </button>
+                        </div>
+
+                        <!-- Export/Import Buttons -->
+                        <div class="grid grid-cols-2 gap-2">
+                            <button id="btn-level-export" class="py-1.5 bg-purple-100 hover:bg-purple-200 text-purple-800 font-bold rounded-lg text-xs transition-all">
+                                <i class="fa-solid fa-file-export mr-1"></i> Export JSON
+                            </button>
+                            <button id="btn-level-import" class="py-1.5 bg-purple-100 hover:bg-purple-200 text-purple-800 font-bold rounded-lg text-xs transition-all">
+                                <i class="fa-solid fa-file-import mr-1"></i> Import JSON
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- WEB SONG API SETTINGS PANEL -->
+                <div id="panel-settings" class="bg-indigo-50/90 border-2 border-indigo-200 rounded-2xl p-4 flex flex-col gap-3">
+                    <span class="font-bold text-indigo-800 text-lg flex items-center gap-2 pb-2 border-b-2 border-indigo-100">
+                        <i class="fa-solid fa-radio text-indigo-500"></i> Web Song API Settings
+                    </span>
+
+                    <!-- Song presets selector -->
+                    <div>
+                        <label class="text-xs font-bold text-indigo-700 block mb-1">Select Track Preset:</label>
+                        <select id="song-preset-select" class="w-full p-2 bg-white border border-indigo-200 rounded-xl text-xs font-bold text-slate-700">
+                            <option value="happy_arcade">Happy Arcade Bleeps (Synth Loop)</option>
+                            <option value="melon_dance">Cocomelon Dance Theme (Built-in Audio Synth)</option>
+                            <option value="custom">-- Custom Web Song MP3 URL --</option>
+                        </select>
+                    </div>
+
+                    <!-- Custom MP3 URL Input -->
+                    <div id="custom-song-url-box" class="hidden">
+                        <label class="text-xs font-bold text-indigo-700 block mb-1">Direct MP3 Audio URL:</label>
+                        <input id="input-song-url" type="text" placeholder="https://domain.com/track.mp3" class="w-full p-2 bg-white border border-indigo-200 rounded-xl text-xs font-mono text-slate-600 focus:outline-indigo-500">
+                        <p class="text-[10px] text-indigo-500 mt-1">Note: URL must support CORS permissions.</p>
+                    </div>
+
+                    <!-- Music Beat Visualizer Canvas Preview -->
+                    <div class="bg-indigo-900/10 border border-indigo-200 rounded-xl h-12 flex items-center justify-center overflow-hidden relative">
+                        <!-- Tiny animated canvas bars -->
+                        <canvas id="visualizer-canvas" class="w-full h-full absolute inset-0 opacity-40 pointer-events-none"></canvas>
+                        <span class="text-xs font-bold text-indigo-800 relative z-10 select-none">Beat Visualizer Sync Active</span>
+                    </div>
+
+                    <!-- Control sliders -->
+                    <div class="flex flex-col gap-1.5">
+                        <div class="flex justify-between items-center text-xs">
+                            <span class="font-bold text-indigo-700">Music Volume:</span>
+                            <span id="volume-indicator" class="font-bold text-indigo-900">70%</span>
+                        </div>
+                        <input id="slider-volume" type="range" min="0" max="100" value="70" class="w-full h-1 bg-indigo-200 rounded-lg appearance-none cursor-pointer accent-indigo-500">
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        
+    </div>
+
+    <!-- Custom Modal dialogs instead of native Alert/Confirm -->
+    <div id="custom-modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
+        <div class="bg-white rounded-2xl border-4 border-pink-300 max-w-md w-full p-6 shadow-2xl flex flex-col gap-4 transform transition-all scale-95 duration-200">
+            <h4 id="modal-title" class="text-2xl font-bold text-pink-600">Modal Title</h4>
+            <div id="modal-content" class="text-sm text-slate-600 leading-relaxed font-semibold">
+                Modal content placeholder...
+            </div>
+            <!-- Dynamic Footer actions -->
+            <div id="modal-actions" class="flex justify-end gap-2 pt-2 border-t border-slate-100">
+                <button id="btn-modal-close" class="px-5 py-2 bg-pink-500 hover:bg-pink-600 text-white font-bold rounded-xl text-sm transition-all">
+                    Acknowledge
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /**************************************************************
+         * COCOMELON DASH - MAIN GAME ENGINE AND COMPONENT DEFINITIONS
+         **************************************************************/
+
+        // Web Audio API Setup for Synthesized Sound FX (to avoid loaded files crashing or cross-origin errors)
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        let audioCtx = null;
+        let songAudioElement = new Audio();
+        songAudioElement.crossOrigin = "anonymous";
+        let audioSource = null;
+        let audioAnalyzer = null;
+        let soundVolumeNode = null;
+
+        // Custom Sound Synth Trigger
+        function playSynthesizedSound(type) {
+            try {
+                if (!audioCtx) {
+                    audioCtx = new AudioContext();
+                }
+                if (audioCtx.state === 'suspended') {
+                    audioCtx.resume();
+                }
+
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+
+                const now = audioCtx.currentTime;
+
+                if (type === 'jump') {
+                    // Playful cute retro spring boing sound
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(150, now);
+                    osc.frequency.exponentialRampToValueAtTime(520, now + 0.15);
+                    gain.gain.setValueAtTime(0.2, now);
+                    gain.gain.linearRampToValueAtTime(0.01, now + 0.15);
+                    osc.start(now);
+                    osc.stop(now + 0.15);
+                } else if (type === 'crash') {
+                    // Cute pop-explosion cartoon noise
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(280, now);
+                    osc.frequency.exponentialRampToValueAtTime(40, now + 0.35);
+                    gain.gain.setValueAtTime(0.3, now);
+                    gain.gain.linearRampToValueAtTime(0.01, now + 0.35);
+                    osc.start(now);
+                    osc.stop(now + 0.35);
+                } else if (type === 'pad') {
+                    // Bubble-like sound jump pad boost
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(300, now);
+                    osc.frequency.exponentialRampToValueAtTime(900, now + 0.25);
+                    gain.gain.setValueAtTime(0.25, now);
+                    gain.gain.linearRampToValueAtTime(0.01, now + 0.25);
+                    osc.start(now);
+                    osc.stop(now + 0.25);
+                } else if (type === 'orb') {
+                    // Magical sparkling bell chime
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(880, now);
+                    osc.frequency.exponentialRampToValueAtTime(1200, now + 0.18);
+                    gain.gain.setValueAtTime(0.2, now);
+                    gain.gain.linearRampToValueAtTime(0.01, now + 0.18);
+                    osc.start(now);
+                    osc.stop(now + 0.18);
+                } else if (type === 'checkpoint') {
+                    // Short soft pop
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(440, now);
+                    osc.frequency.exponentialRampToValueAtTime(600, now + 0.08);
+                    gain.gain.setValueAtTime(0.15, now);
+                    gain.gain.linearRampToValueAtTime(0.01, now + 0.08);
+                    osc.start(now);
+                    osc.stop(now + 0.08);
+                }
+            } catch (err) {
+                console.warn('Audio Synthesis not initialized yet. Interactivity will active fully on user interaction.', err);
+            }
+        }
+
+        // Standard presets with high tempo suitable for Geometry Dash gameplay
+        // Utilizing direct links of creative commons high tempo music or dynamic synth loop
+        const SONG_PRESETS = {
+            happy_arcade: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3", // Demo fallback
+            melon_dance: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3",  // Alternative track
+            custom: ""
+        };
+
+        // Game Board Constants
+        const CANVAS_WIDTH = 800;
+        const CANVAS_HEIGHT = 400;
+        const GRID_SIZE = 40; // 40px grid elements. Grid Height is 10 cells, width can be arbitrary
+
+        // Level Grid Tile Identifiers
+        const TILE_EMPTY = 0;
+        const TILE_BLOCK = 1;      // Standard platform
+        const TILE_SPIKE = 2;      // Smiling triangular danger
+        const TILE_PAD = 3;        // Boost spring pad
+        const TILE_ORB = 4;        // Ring jump boost
+        const TILE_PORTAL_SHIP = 5; // Portal changing to Ship fly mode
+        const TILE_PORTAL_CUBE = 6; // Portal changing to Cube jump mode
+        const TILE_END = 7;         // Rainbow smiling finish line
+
+        // Grid Assets Metadata for selection list
+        const EDITOR_ASSETS = [
+            { id: TILE_BLOCK, name: 'Block', icon: '🧱', color: '#10b981', desc: 'Step-on solid box' },
+            { id: TILE_SPIKE, name: 'Spike', icon: '🔺', color: '#ef4444', desc: 'Obstacle / instant crash' },
+            { id: TILE_PAD, name: 'Pad', icon: '🔋', color: '#fbbf24', desc: 'Super boost jump on touch' },
+            { id: TILE_ORB, name: 'Orb', icon: '🟡', color: '#a855f7', desc: 'Tap space near it to double jump' },
+            { id: TILE_PORTAL_SHIP, name: 'Ship Portal', icon: '🛸', color: '#ec4899', desc: 'Enables aircraft fly mode' },
+            { id: TILE_PORTAL_CUBE, name: 'Cube Portal', icon: '🟩', color: '#3b82f6', desc: 'Enables cube jump mode' },
+            { id: TILE_END, name: 'Finish', icon: '🏁', color: '#f59e0b', desc: 'Winning finish line point' }
+        ];
+
+        // 3 Built-in Levels structured inside the grid matrix (Height = 10 cells, Length = up to 300 cells)
+        const PREBUILT_LEVELS = [
+            // Level 1: "Melon Meadows" (Cube mechanics, introductory blocks, jump pads)
+            {
+                title: "Melon Meadows",
+                speed: 6.0,
+                tiles: [
+                    // A pre-loaded map sequence: [gridX, gridY, tileType]
+                    [5, 9, TILE_BLOCK], [6, 9, TILE_BLOCK], [7, 9, TILE_BLOCK],
+                    [12, 9, TILE_SPIKE],
+                    [16, 9, TILE_BLOCK], [17, 9, TILE_BLOCK], [18, 9, TILE_BLOCK],
+                    [23, 9, TILE_PAD], [24, 7, TILE_BLOCK], [25, 7, TILE_BLOCK],
+                    [30, 9, TILE_SPIKE], [32, 9, TILE_SPIKE],
+                    [37, 9, TILE_BLOCK], [38, 8, TILE_BLOCK], [39, 7, TILE_BLOCK],
+                    [44, 9, TILE_ORB], [46, 6, TILE_BLOCK], [47, 6, TILE_BLOCK],
+                    [52, 9, TILE_SPIKE], [53, 9, TILE_SPIKE],
+                    [58, 9, TILE_PORTAL_SHIP], // Swap to Ship
+                    [64, 4, TILE_BLOCK], [65, 4, TILE_BLOCK], [66, 4, TILE_BLOCK],
+                    [70, 7, TILE_BLOCK], [71, 7, TILE_BLOCK],
+                    [75, 2, TILE_BLOCK], [76, 2, TILE_BLOCK],
+                    [82, 9, TILE_PORTAL_CUBE], // Swap back to Cube
+                    [86, 9, TILE_PAD], [87, 8, TILE_BLOCK], [88, 7, TILE_BLOCK], [89, 6, TILE_BLOCK],
+                    [94, 9, TILE_SPIKE], [95, 9, TILE_SPIKE], [96, 9, TILE_SPIKE],
+                    [105, 9, TILE_END]
+                ]
+            },
+            // Level 2: "Rainbow Jump" (More intensive double jumps, pads and high speed)
+            {
+                title: "Rainbow Jump",
+                speed: 7.2,
+                tiles: [
+                    [5, 9, TILE_BLOCK], [6, 9, TILE_BLOCK],
+                    [10, 9, TILE_PAD], [12, 6, TILE_SPIKE],
+                    [16, 9, TILE_SPIKE], [18, 9, TILE_PAD], [21, 5, TILE_BLOCK],
+                    [25, 9, TILE_SPIKE], [26, 9, TILE_SPIKE],
+                    [31, 9, TILE_ORB], [34, 9, TILE_ORB], [36, 6, TILE_BLOCK],
+                    [41, 9, TILE_PAD], [44, 5, TILE_BLOCK], [45, 5, TILE_SPIKE], [46, 5, TILE_BLOCK],
+                    [51, 9, TILE_SPIKE], [54, 8, TILE_BLOCK], [55, 7, TILE_BLOCK],
+                    [60, 9, TILE_PORTAL_SHIP],
+                    [65, 3, TILE_BLOCK], [68, 6, TILE_BLOCK], [71, 2, TILE_BLOCK],
+                    [77, 9, TILE_PORTAL_CUBE],
+                    [82, 9, TILE_PAD], [85, 5, TILE_SPIKE], [88, 9, TILE_PAD],
+                    [100, 9, TILE_END]
+                ]
+            }
+        ];
+
+        // Game Engine Variables
+        let canvas = document.getElementById('game-canvas');
+        let ctx = canvas.getContext('2d');
+        let visualizerCanvas = document.getElementById('visualizer-canvas');
+        let visCtx = visualizerCanvas.getContext('2d');
+
+        // Current Active Level state
+        let currentLevelIndex = 0;
+        let activeLevelData = JSON.parse(JSON.stringify(PREBUILT_LEVELS[0])); // Clone
+
+        // Level Editor State
+        let selectedTileToPlace = TILE_BLOCK;
+        let editorScrollX = 0; // Horizontal tile block displacement
+        let isEditorActive = false;
+        let editorLevels = []; // Custom loaded/saved levels
+
+        // Practice Mode State
+        let isPracticeMode = false;
+        let checkpoints = []; // List of checkpoint states [{x, y, vy, mode, angle, gravityScale}]
+
+        // Physics & Player State variables
+        let isPlaying = false;
+        let isPaused = false;
+        let gameFrames = 0;
+        let levelCompletionPercent = 0;
+
+        // Player structure
+        let player = {
+            x: 100,
+            y: 300,
+            width: 32,
+            height: 32,
+            vy: 0,
+            vx: 6.0, // Active level horizontal scroll rate
+            rotation: 0,
+            isGrounded: false,
+            mode: 'CUBE', // CUBE or SHIP
+            targetY: 300,
+            isJumping: false
+        };
+
+        // Physics parameters
+        const GRAVITY_CONSTANT = 0.8;
+        const JUMP_VELOCITY = -13.0;
+        const SHIP_GRAVITY = 0.35;
+        const SHIP_THRUST = -0.7;
+
+        // Visual Parallax Elements
+        let backgroundScroll = 0;
+        let backgroundHue = 330; // Neon pink start hue
+
+        // Touch/Action Controls Status
+        let keysPressed = {};
+
+        // Initialize Tile Selector UI buttons inside sidebar
+        function setupEditorUI() {
+            const container = document.getElementById('editor-tile-selector');
+            container.innerHTML = '';
+            
+            // Generate Tile Placement buttons
+            EDITOR_ASSETS.forEach(asset => {
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = `editor-tile-btn p-2 rounded-xl border-2 flex flex-col items-center justify-center bg-white hover:bg-pink-100 transition-all text-center group ${selectedTileToPlace === asset.id ? 'border-pink-500 ring-2 ring-pink-300' : 'border-pink-200'}`;
+                btn.onclick = () => selectEditorTile(asset.id);
+                btn.title = asset.desc;
+                btn.innerHTML = `
+                    <span class="text-2xl">${asset.icon}</span>
+                    <span class="text-[10px] font-bold text-pink-900 leading-tight mt-1">${asset.name}</span>
+                `;
+                container.appendChild(btn);
+            });
+
+            // Add Eraser Element manually to layout
+            const eraserBtn = document.createElement('button');
+            eraserBtn.type = 'button';
+            eraserBtn.className = `editor-tile-btn p-2 rounded-xl border-2 flex flex-col items-center justify-center bg-white hover:bg-pink-100 transition-all text-center ${selectedTileToPlace === TILE_EMPTY ? 'border-pink-500 ring-2 ring-pink-300' : 'border-pink-200'}`;
+            eraserBtn.onclick = () => selectEditorTile(TILE_EMPTY);
+            eraserBtn.title = "Erase objects from layout";
+            eraserBtn.innerHTML = `
+                <span class="text-2xl">🧽</span>
+                <span class="text-[10px] font-bold text-slate-500 leading-tight mt-1">Eraser</span>
+            `;
+            container.appendChild(eraserBtn);
+        }
+
+        function selectEditorTile(id) {
+            selectedTileToPlace = id;
+            // Update selected appearance
+            const btns = document.querySelectorAll('.editor-tile-btn');
+            setupEditorUI();
+        }
+
+        // Save & Load levels from storage or clipboard string
+        function exportLevelToJSON() {
+            const levelStr = JSON.stringify(activeLevelData, null, 2);
+            // Copy to clipboard fallback format
+            const dummyArea = document.createElement('textarea');
+            document.body.appendChild(dummyArea);
+            dummyArea.value = levelStr;
+            dummyArea.select();
+            document.execCommand('copy');
+            document.body.removeChild(dummyArea);
+
+            showModal("Level Exported!", "Your custom Cocomelon level design was exported to the clipboard in JSON format. Share it with fellow builders or save it in a text file! 🎉");
+        }
+
+        function importLevelFromJSON() {
+            // Ask user for JSON string via modal structure input
+            const rawInput = prompt("Paste your Cocomelon Level JSON string below:");
+            if (!rawInput) return;
+            try {
+                const loaded = JSON.parse(rawInput);
+                if (loaded && loaded.tiles) {
+                    activeLevelData = loaded;
+                    editorScrollX = 0;
+                    document.getElementById('editor-scroll-display').textContent = `X: 0`;
+                    showModal("Import Successful", `Successfully loaded level: "${activeLevelData.title || 'Custom Level'}"!`);
+                    if (isEditorActive) {
+                        drawEditorCanvas();
+                    }
+                } else {
+                    showModal("Invalid Layout", "Oops! The JSON data is missing a valid 'tiles' grid. Please try again with a valid level script.");
+                }
+            } catch (e) {
+                showModal("Import Error", "Oh no! There was a problem parsing the JSON text string. Ensure it's copied properly.");
+            }
+        }
+
+        // Modal Utility
+        function showModal(title, bodyText, options = null) {
+            document.getElementById('modal-title').textContent = title;
+            document.getElementById('modal-content').innerHTML = bodyText;
+            
+            const actionContainer = document.getElementById('modal-actions');
+            actionContainer.innerHTML = '';
+            
+            if (options && options.length > 0) {
+                options.forEach(opt => {
+                    const btn = document.createElement('button');
+                    btn.className = opt.class || "px-4 py-2 bg-slate-500 text-white font-bold rounded-xl text-xs transition-all";
+                    btn.textContent = opt.text;
+                    btn.onclick = () => {
+                        opt.handler();
+                        closeModal();
+                    };
+                    actionContainer.appendChild(btn);
+                });
+            } else {
+                // Standard dismiss
+                const btn = document.createElement('button');
+                btn.className = "px-5 py-2 bg-pink-500 hover:bg-pink-600 text-white font-bold rounded-xl text-sm transition-all";
+                btn.textContent = "Got it!";
+                btn.onclick = closeModal;
+                actionContainer.appendChild(btn);
+            }
+            
+            const modal = document.getElementById('custom-modal');
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.firstElementChild.classList.remove('scale-95');
+                modal.firstElementChild.classList.add('scale-100');
+            }, 10);
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('custom-modal');
+            modal.firstElementChild.classList.remove('scale-100');
+            modal.firstElementChild.classList.add('scale-95');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 150);
+        }
+
+        // Set tile data inside active map level
+        function setTileAtGrid(gridX, gridY, tileType) {
+            // Remove any overlapping existing tiles first
+            activeLevelData.tiles = activeLevelData.tiles.filter(tile => !(tile[0] === gridX && tile[1] === gridY));
+            if (tileType !== TILE_EMPTY) {
+                activeLevelData.tiles.push([gridX, gridY, tileType]);
+            }
+        }
+
+        function getTileAtGrid(gridX, gridY) {
+            const tile = activeLevelData.tiles.find(t => t[0] === gridX && t[1] === gridY);
+            return tile ? tile[2] : TILE_EMPTY;
+        }
+
+        // Draw grid lines and elements within Editor workspace
+        function drawEditorCanvas() {
+            if (!isEditorActive) return;
+
+            // Clear previous screen contents
+            ctx.fillStyle = '#1e1e2e'; // Dark slate designer style
+            ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+
+            // Draw decorative helper neon matrix stripes
+            ctx.strokeStyle = '#2d2d44';
+            ctx.lineWidth = 1;
+            const cols = Math.ceil(CANVAS_WIDTH / GRID_SIZE) + 1;
+            const rows = CANVAS_HEIGHT / GRID_SIZE;
+
+            // Paint grid columns
+            for (let i = 0; i < cols; i++) {
+                const xPos = i * GRID_SIZE - (editorScrollX % GRID_SIZE);
+                ctx.beginPath();
+                ctx.moveTo(xPos, 0);
+                ctx.lineTo(xPos, CANVAS_HEIGHT);
+                ctx.stroke();
+            }
+            // Paint grid rows
+            for (let j = 0; j < rows; j++) {
+                const yPos = j * GRID_SIZE;
+                ctx.beginPath();
+                ctx.moveTo(0, yPos);
+                ctx.lineTo(CANVAS_WIDTH, yPos);
+                ctx.stroke();
+            }
+
+            // Draw Level floor lines
+            ctx.strokeStyle = '#ec4899';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(0, CANVAS_HEIGHT - GRID_SIZE);
+            ctx.lineTo(CANVAS_WIDTH, CANVAS_HEIGHT - GRID_SIZE);
+            ctx.stroke();
+
+            // Render all placed objects onto grid view
+            activeLevelData.tiles.forEach(tile => {
+                const [tx, ty, tType] = tile;
+                const tileScreenX = tx * GRID_SIZE - editorScrollX;
+
+                // Check visibility limits
+                if (tileScreenX >= -GRID_SIZE && tileScreenX <= CANVAS_WIDTH) {
+                    drawTileSymbol(tType, tileScreenX, ty * GRID_SIZE, GRID_SIZE, GRID_SIZE);
+                }
+            });
+
+            // Draw simple marker showing start point
+            ctx.fillStyle = 'rgba(16, 185, 129, 0.3)';
+            ctx.fillRect(100 - editorScrollX, 0, 4, CANVAS_HEIGHT);
+            ctx.fillStyle = '#10b981';
+            ctx.font = '10px Inter';
+            ctx.fillText("MELON START LINE", 108 - editorScrollX, 20);
+        }
+
+        // Draw cute symbols for each Geometry Dash element in canvas context
+        function drawTileSymbol(type, x, y, w, h) {
+            ctx.save();
+            if (type === TILE_BLOCK) {
+                // Cute pastel green/white block with a smiley face
+                ctx.fillStyle = '#6ee7b7';
+                ctx.strokeStyle = '#34d399';
+                ctx.lineWidth = 2.5;
+                ctx.fillRect(x + 2, y + 2, w - 4, h - 4);
+                ctx.strokeRect(x + 2, y + 2, w - 4, h - 4);
+                // Cute blushing cheeks on block
+                ctx.fillStyle = '#fb7185';
+                ctx.fillRect(x + 5, y + 22, 5, 4);
+                ctx.fillRect(x + 30, y + 22, 5, 4);
+                // Tiny eyes
+                ctx.fillStyle = '#1e293b';
+                ctx.fillRect(x + 10, y + 14, 4, 4);
+                ctx.fillRect(x + 26, y + 14, 4, 4);
+            } 
+            else if (type === TILE_SPIKE) {
+                // Smiling dangerous spike
+                ctx.fillStyle = '#fda4af';
+                ctx.strokeStyle = '#f43f5e';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(x + w / 2, y + 4);
+                ctx.lineTo(x + 2, y + h - 2);
+                ctx.lineTo(x + w - 2, y + h - 2);
+                ctx.closePath();
+                ctx.fill();
+                ctx.stroke();
+                // Tiny playful face inside spike
+                ctx.fillStyle = '#1e293b';
+                ctx.font = '8px Fredoka';
+                ctx.fillText("^ . ^", x + w/2 - 10, y + h - 8);
+            } 
+            else if (type === TILE_PAD) {
+                // Jellybean bouncy spring pad
+                ctx.fillStyle = '#fde047';
+                ctx.strokeStyle = '#eab308';
+                ctx.lineWidth = 2;
+                ctx.fillRect(x + 6, y + h - 14, w - 12, 12);
+                ctx.strokeRect(x + 6, y + h - 14, w - 12, 12);
+                ctx.fillStyle = '#fef08a';
+                ctx.fillRect(x + 9, y + h - 11, w - 18, 4);
+            } 
+            else if (type === TILE_ORB) {
+                // Sparkling purple neon orb
+                ctx.fillStyle = 'rgba(192, 132, 252, 0.4)';
+                ctx.strokeStyle = '#c084fc';
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.arc(x + w/2, y + h/2, 12, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.stroke();
+                // Core glow
+                ctx.fillStyle = '#f3e8ff';
+                ctx.beginPath();
+                ctx.arc(x + w/2, y + h/2, 6, 0, Math.PI * 2);
+                ctx.fill();
+            } 
+            else if (type === TILE_PORTAL_SHIP) {
+                // Neon Pink Ship Mode Portal
+                ctx.fillStyle = 'rgba(236, 72, 153, 0.2)';
+                ctx.strokeStyle = '#ec4899';
+                ctx.lineWidth = 4;
+                ctx.beginPath();
+                ctx.ellipse(x + w/2, y + h/2, 12, 18, 0, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.stroke();
+                // Icon label
+                ctx.fillStyle = '#ffffff';
+                ctx.font = '9px Fredoka';
+                ctx.fillText("🛸 SHIP", x + 3, y + h/2 + 3);
+            } 
+            else if (type === TILE_PORTAL_CUBE) {
+                // Neon Blue Cube Mode Portal
+                ctx.fillStyle = 'rgba(59, 130, 246, 0.2)';
+                ctx.strokeStyle = '#3b82f6';
+                ctx.lineWidth = 4;
+                ctx.beginPath();
+                ctx.ellipse(x + w/2, y + h/2, 12, 18, 0, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.stroke();
+                // Icon label
+                ctx.fillStyle = '#ffffff';
+                ctx.font = '9px Fredoka';
+                ctx.fillText("🍉 CUBE", x + 3, y + h/2 + 3);
+            } 
+            else if (type === TILE_END) {
+                // Cute rainbow smiling finish line flag
+                ctx.fillStyle = '#fbbf24';
+                ctx.fillRect(x + 4, y + 2, 4, h - 4);
+                // Flag waving
+                ctx.fillStyle = '#ef4444';
+                ctx.beginPath();
+                ctx.moveTo(x + 8, y + 2);
+                ctx.lineTo(x + w - 4, y + h/3);
+                ctx.lineTo(x + 8, y + h*2/3);
+                ctx.fill();
+                // Smiling face on flag base
+                ctx.font = '12px Inter';
+                ctx.fillText("🏁", x + 10, y + h - 4);
+            }
+            ctx.restore();
+        }
+
+        // Canvas mouse handlers for creating tiles in Editor
+        let isDrawingOnCanvas = false;
+
+        function handleCanvasMouseDown(e) {
+            if (!isEditorActive) return;
+            isDrawingOnCanvas = true;
+            paintTileAtMouse(e);
+        }
+
+        function handleCanvasMouseMove(e) {
+            if (!isEditorActive || !isDrawingOnCanvas) return;
+            paintTileAtMouse(e);
+        }
+
+        function handleCanvasMouseUp() {
+            isDrawingOnCanvas = false;
+        }
+
+        function paintTileAtMouse(e) {
+            const rect = canvas.getBoundingClientRect();
+            const clickX = e.clientX - rect.left;
+            const clickY = e.clientY - rect.top;
+
+            // Translate click coordinate to canvas resolution scale
+            const canvasScaleX = CANVAS_WIDTH / rect.width;
+            const canvasScaleY = CANVAS_HEIGHT / rect.height;
+            const targetX = clickX * canvasScaleX;
+            const targetY = clickY * canvasScaleY;
+
+            // Calculate Grid Cell coordinates
+            const gridCellX = Math.floor((targetX + editorScrollX) / GRID_SIZE);
+            const gridCellY = Math.min(Math.max(Math.floor(targetY / GRID_SIZE), 0), 9);
+
+            setTileAtGrid(gridCellX, gridCellY, selectedTileToPlace);
+            drawEditorCanvas();
+        }
+
+        // Add event listeners for paint on drag
+        canvas.addEventListener('mousedown', handleCanvasMouseDown);
+        canvas.addEventListener('mousemove', handleCanvasMouseMove);
+        window.addEventListener('mouseup', handleCanvasMouseUp);
+
+        // Grid scroll keys/buttons
+        document.getElementById('btn-grid-left').onclick = () => {
+            if (editorScrollX >= GRID_SIZE) {
+                editorScrollX -= GRID_SIZE;
+                document.getElementById('editor-scroll-display').textContent = `X: ${editorScrollX}`;
+                drawEditorCanvas();
+            }
+        };
+        document.getElementById('btn-grid-right').onclick = () => {
+            editorScrollX += GRID_SIZE;
+            document.getElementById('editor-scroll-display').textContent = `X: ${editorScrollX}`;
+            drawEditorCanvas();
+        };
+
+        // Practice Mode controls
+        const btnPractice = document.getElementById('btn-practice-toggle');
+        const btnPlaceCP = document.getElementById('btn-checkpoint-place');
+        const btnClearCP = document.getElementById('btn-checkpoint-clear');
+
+        btnPractice.onclick = () => {
+            isPracticeMode = !isPracticeMode;
+            if (isPracticeMode) {
+                btnPractice.classList.remove('bg-slate-600', 'hover:bg-slate-700');
+                btnPractice.classList.add('bg-emerald-500', 'hover:bg-emerald-600');
+                document.getElementById('practice-status-pill').classList.remove('hidden');
+                btnPlaceCP.disabled = false;
+                btnClearCP.disabled = false;
+                showModal("Practice Mode Active!", "You are now running under Cocomelon Practice Mode! 🎓<br><br>Press <kbd class='px-1 bg-slate-100 rounded border'>Z</kbd> anytime to lay a watermelon checkpoint. If you crash, you'll immediately restart at the last checkpoint. Press <kbd class='px-1 bg-slate-100 rounded border'>X</kbd> to remove checkpoints.");
+            } else {
+                btnPractice.classList.add('bg-slate-600', 'hover:bg-slate-700');
+                btnPractice.classList.remove('bg-emerald-500', 'hover:bg-emerald-600');
+                document.getElementById('practice-status-pill').classList.add('hidden');
+                btnPlaceCP.disabled = true;
+                btnClearCP.disabled = true;
+                checkpoints = [];
+            }
+            playSynthesizedSound('checkpoint');
+        };
+
+        btnPlaceCP.onclick = () => {
+            if (!isPlaying || !isPracticeMode) return;
+            placeCheckpoint();
+        };
+
+        btnClearCP.onclick = () => {
+            if (!isPlaying || !isPracticeMode) return;
+            removeLastCheckpoint();
+        };
+
+        function placeCheckpoint() {
+            // Push active physical state into checkpoint buffer
+            checkpoints.push({
+                x: player.x,
+                y: player.y,
+                vy: player.vy,
+                mode: player.mode,
+                rotation: player.rotation,
+                isGrounded: player.isGrounded,
+                isJumping: player.isJumping
+            });
+            playSynthesizedSound('checkpoint');
+        }
+
+        function removeLastCheckpoint() {
+            if (checkpoints.length > 0) {
+                checkpoints.pop();
+                playSynthesizedSound('crash');
+            }
+        }
+
+        // Keyboard bindings for checkpoints
+        window.addEventListener('keydown', (e) => {
+            if (!isPlaying) return;
+            if (e.key.toLowerCase() === 'z') {
+                if (isPracticeMode) {
+                    placeCheckpoint();
+                }
+            } else if (e.key.toLowerCase() === 'x') {
+                if (isPracticeMode) {
+                    removeLastCheckpoint();
+                }
+            }
+        });
+
+        // Initialize HTML5 Audio and context link for analyzer support
+        function initWebSongAPI() {
+            const selectEl = document.getElementById('song-preset-select');
+            const customBox = document.getElementById('custom-song-url-box');
+            const urlInput = document.getElementById('input-song-url');
+            const volumeSlider = document.getElementById('slider-volume');
+            const volumeIndicator = document.getElementById('volume-indicator');
+
+            // Set default music volume
+            songAudioElement.volume = parseFloat(volumeSlider.value) / 100;
+
+            selectEl.onchange = () => {
+                if (selectEl.value === 'custom') {
+                    customBox.classList.remove('hidden');
+                } else {
+                    customBox.classList.add('hidden');
+                    loadMusicTrack(SONG_PRESETS[selectEl.value]);
+                }
+            };
+
+            urlInput.onchange = () => {
+                if (urlInput.value) {
+                    loadMusicTrack(urlInput.value);
+                }
+            };
+
+            volumeSlider.oninput = () => {
+                const volVal = volumeSlider.value;
+                volumeIndicator.textContent = `${volVal}%`;
+                songAudioElement.volume = parseFloat(volVal) / 100;
+            };
+
+            // Set up basic analyzer graph rendering
+            setInterval(updateMusicVisualizer, 50);
+        }
+
+        function loadMusicTrack(src) {
+            try {
+                songAudioElement.pause();
+                songAudioElement.src = src;
+                songAudioElement.loop = true;
+                songAudioElement.load();
+
+                // Setup audio context analyzer when sound begins
+                if (AudioContext && !audioCtx) {
+                    audioCtx = new AudioContext();
+                }
+                if (audioCtx && !audioSource) {
+                    try {
+                        audioSource = audioCtx.createMediaElementSource(songAudioElement);
+                        audioAnalyzer = audioCtx.createAnalyser();
+                        audioAnalyzer.fftSize = 64; // Small for simplified beat detection bars
+                        
+                        audioSource.connect(audioAnalyzer);
+                        audioAnalyzer.connect(audioCtx.destination);
+                    } catch (e) {
+                        console.warn("Could not bind audio element source. Direct browser CORS restrictions may prevent visualizer analytics, but audio will play.", e);
+                    }
+                }
+            } catch (err) {
+                console.error("Failed to load custom Web Song API music target source URL", err);
+            }
+        }
+
+        // Render reactive beat audio bar inside dashboard settings
+        function updateMusicVisualizer() {
+            visCtx.clearRect(0, 0, visualizerCanvas.width, visualizerCanvas.height);
+            
+            let pulseStrength = 1.0;
+            
+            if (audioAnalyzer) {
+                const bufferLength = audioAnalyzer.frequencyBinCount;
+                const dataArray = new Uint8Array(bufferLength);
+                audioAnalyzer.getByteFrequencyData(dataArray);
+
+                const barWidth = (visualizerCanvas.width / bufferLength) * 1.5;
+                let barHeight;
+                let x = 0;
+
+                let energySum = 0;
+
+                for (let i = 0; i < bufferLength; i++) {
+                    barHeight = dataArray[i] / 4;
+                    energySum += dataArray[i];
+
+                    // Cute neon coloring bars
+                    visCtx.fillStyle = `hsla(${240 + i * 5}, 100%, 70%, 0.65)`;
+                    visCtx.fillRect(x, visualizerCanvas.height - barHeight, barWidth - 2, barHeight);
+
+                    x += barWidth;
+                }
+
+                // Smooth pulse calculation
+                const averageEnergy = energySum / bufferLength;
+                pulseStrength = 1.0 + (averageEnergy / 255) * 0.12;
+            } else {
+                // Static dummy bouncing waveform loop if audio doesn't have CORS permission or not initialized yet
+                const activeTime = Date.now() / 200;
+                const barCount = 16;
+                const barWidth = visualizerCanvas.width / barCount;
+                for (let i = 0; i < barCount; i++) {
+                    const barHeight = Math.abs(Math.sin(activeTime + i)) * 25;
+                    visCtx.fillStyle = `hsla(${330 + i * 2}, 100%, 75%, 0.6)`;
+                    visCtx.fillRect(i * barWidth, visualizerCanvas.height - barHeight, barWidth - 2, barHeight);
+                }
+                pulseStrength = 1.0 + Math.abs(Math.sin(activeTime)) * 0.05;
+            }
+
+            // Sync visual beat pulse directly to physical HTML outer frame
+            const pulseTargets = document.querySelectorAll('.pulse-beat');
+            pulseTargets.forEach(el => {
+                el.style.transform = `scale(${pulseStrength})`;
+            });
+        }
+
+        // Player Action inputs (Spacebar / up arrow / click / Touch)
+        function registerControls() {
+            window.addEventListener('keydown', (e) => {
+                keysPressed[e.code] = true;
+                if (e.code === 'Space' || e.code === 'ArrowUp') {
+                    e.preventDefault(); // Stop window space scroll
+                    triggerJump();
+                }
+            });
+
+            window.addEventListener('keyup', (e) => {
+                keysPressed[e.code] = false;
+            });
+
+            // Touch support for screen buttons and jumps
+            const jumpBtn = document.getElementById('btn-action-jump');
+            jumpBtn.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                triggerJump();
+            });
+            jumpBtn.addEventListener('mousedown', (e) => {
+                e.preventDefault();
+                triggerJump();
+            });
+
+            // Prevent canvas mouse drawing from registering as game jumps
+            canvas.addEventListener('mousedown', (e) => {
+                if (isPlaying && !isEditorActive && !isPaused) {
+                    triggerJump();
+                }
+            });
+        }
+
+        function triggerJump() {
+            if (!isPlaying || isPaused) return;
+
+            if (player.mode === 'CUBE') {
+                if (player.isGrounded) {
+                    player.vy = JUMP_VELOCITY;
+                    player.isGrounded = false;
+                    player.isJumping = true;
+                    playSynthesizedSound('jump');
+                }
+            } else if (player.mode === 'SHIP') {
+                // Rocket booster propulsion pushes upwards immediately
+                player.vy += SHIP_THRUST;
+                playSynthesizedSound('jump');
+            }
+
+            // Interactive Orb Check (Double Jump/mid-air jump trigger)
+            const tileRadius = GRID_SIZE * 1.5;
+            activeLevelData.tiles.forEach(tile => {
+                const [tx, ty, tType] = tile;
+                if (tType === TILE_ORB) {
+                    const orbX = tx * GRID_SIZE + GRID_SIZE / 2;
+                    const orbY = ty * GRID_SIZE + GRID_SIZE / 2;
+                    // Check distance to center of orb
+                    const dist = Math.hypot(player.x + player.width/2 - orbX, player.y + player.height/2 - orbY);
+                    if (dist < tileRadius) {
+                        player.vy = JUMP_VELOCITY * 0.95; // Mini double jump boost
+                        player.isGrounded = false;
+                        playSynthesizedSound('orb');
+                        // Mini particle spark on orb activation
+                        triggerSparkParticles(orbX, orbY);
+                    }
+                }
+            });
+        }
+
+        // Simple Visual Spark Particle Array
+        let particles = [];
+        function triggerSparkParticles(x, y) {
+            for (let i = 0; i < 8; i++) {
+                particles.push({
+                    x: x,
+                    y: y,
+                    vx: (Math.random() - 0.5) * 6,
+                    vy: (Math.random() - 0.5) * 6,
+                    life: 20,
+                    color: `hsl(${Math.random() * 360}, 100%, 75%)`
+                });
+            }
+        }
+
+        function updateAndDrawParticles() {
+            particles.forEach((p, idx) => {
+                p.x += p.vx;
+                p.y += p.vy;
+                p.life--;
+
+                ctx.fillStyle = p.color;
+                ctx.beginPath();
+                ctx.arc(p.x - player.x + 100, p.y, p.life / 5 + 1, 0, Math.PI * 2);
+                ctx.fill();
+
+                if (p.life <= 0) {
+                    particles.splice(idx, 1);
+                }
+            });
+        }
+
+        // Core Physics loop
+        function updatePhysics() {
+            if (!isPlaying || isPaused) return;
+
+            gameFrames++;
+            
+            // Apply speed velocity
+            player.x += player.vx;
+
+            // Mode physics variations
+            if (player.mode === 'CUBE') {
+                player.vy += GRAVITY_CONSTANT;
+                // Cap gravity terminal velocity
+                if (player.vy > 15) player.vy = 15;
+            } else {
+                // Ship thrust mode (Hold keys/mouse or release for gravity fall)
+                if (keysPressed['Space'] || keysPressed['ArrowUp']) {
+                    player.vy += SHIP_THRUST;
+                } else {
+                    player.vy += SHIP_GRAVITY;
+                }
+                // Cap ship vertical speeds
+                if (player.vy > 6) player.vy = 6;
+                if (player.vy < -6) player.vy = -6;
+            }
+
+            player.y += player.vy;
+
+            // Standard ground floor constraints
+            const floorY = CANVAS_HEIGHT - GRID_SIZE;
+            if (player.y + player.height >= floorY) {
+                player.y = floorY - player.height;
+                player.vy = 0;
+                player.isGrounded = true;
+                player.isJumping = false;
+            } else {
+                player.isGrounded = false;
+            }
+
+            // Cap sky roof constraints
+            if (player.y <= 0) {
+                player.y = 0;
+                player.vy = 0;
+            }
+
+            // Player Rotation calculations (Geometry Dash Cube spins in the air)
+            if (player.mode === 'CUBE') {
+                if (!player.isGrounded) {
+                    player.rotation += 0.08;
+                } else {
+                    // Snap flat alignment on ground
+                    const rem = player.rotation % (Math.PI / 2);
+                    if (rem > 0) {
+                        player.rotation += (Math.PI / 2 - rem) * 0.2;
+                    }
+                }
+            } else {
+                // Ship mode rotation angles with the ascent/descent velocity vectors
+                player.rotation = player.vy * 0.05;
+            }
+
+            // Collision parameters setup
+            const playerLeft = player.x;
+            const playerRight = player.x + player.width;
+            const playerTop = player.y;
+            const playerBottom = player.y + player.height;
+
+            let isStandingOnAnyBlock = false;
+
+            // Iterate through every active map element for collisions
+            activeLevelData.tiles.forEach(tile => {
+                const [tx, ty, tType] = tile;
+                const tileLeft = tx * GRID_SIZE;
+                const tileRight = tileLeft + GRID_SIZE;
+                const tileTop = ty * GRID_SIZE;
+                const tileBottom = tileTop + GRID_SIZE;
+
+                // Box overlap detection (AABB bounding tests)
+                if (playerRight - 4 > tileLeft && playerLeft + 4 < tileRight &&
+                    playerBottom > tileTop && playerTop < tileBottom) {
+
+                    if (tType === TILE_BLOCK) {
+                        // Check if hitting block head-on (Crash!) or landing safely on top
+                        const overlapX = Math.min(playerRight - tileLeft, tileRight - playerLeft);
+                        const overlapY = Math.min(playerBottom - tileTop, tileBottom - playerTop);
+
+                        if (overlapX > overlapY) {
+                            // Hit top or bottom surface
+                            if (player.vy >= 0 && playerBottom - player.vy <= tileTop + 2) {
+                                // Landed on top safely
+                                player.y = tileTop - player.height;
+                                player.vy = 0;
+                                player.isGrounded = true;
+                                player.isJumping = false;
+                                isStandingOnAnyBlock = true;
+                            } else if (player.vy < 0 && playerTop - player.vy >= tileBottom - 2) {
+                                // Collide ceiling bottom boundary
+                                player.y = tileBottom;
+                                player.vy = 0.5;
+                            }
+                        } else {
+                            // Crash - hit side wall!
+                            handlePlayerCrash();
+                        }
+                    } 
+                    else if (tType === TILE_SPIKE) {
+                        // Spikes crash player instantly (with forgiving hitbox)
+                        const spikePadding = 8;
+                        if (playerRight - spikePadding > tileLeft && playerLeft + spikePadding < tileRight &&
+                            playerBottom - spikePadding > tileTop) {
+                            handlePlayerCrash();
+                        }
+                    } 
+                    else if (tType === TILE_PAD) {
+                        // Jump Pad boost action
+                        player.vy = JUMP_VELOCITY * 1.45;
+                        player.isGrounded = false;
+                        playSynthesizedSound('pad');
+                        triggerSparkParticles(player.x, player.y);
+                    } 
+                    else if (tType === TILE_PORTAL_SHIP) {
+                        // Swap engine to Ship flying mode
+                        if (player.mode !== 'SHIP') {
+                            player.mode = 'SHIP';
+                            document.getElementById('game-mode-tag').textContent = '🛸 SHIP MODE';
+                            document.getElementById('game-mode-tag').className = 'text-pink-400 font-extrabold';
+                            playSynthesizedSound('orb');
+                        }
+                    } 
+                    else if (tType === TILE_PORTAL_CUBE) {
+                        // Swap engine back to standard jump cube mode
+                        if (player.mode !== 'CUBE') {
+                            player.mode = 'CUBE';
+                            document.getElementById('game-mode-tag').textContent = '🍉 CUBE MODE';
+                            document.getElementById('game-mode-tag').className = 'text-emerald-400 font-extrabold';
+                            playSynthesizedSound('orb');
+                        }
+                    } 
+                    else if (tType === TILE_END) {
+                        // Reached finish point! Win!
+                        handleLevelWin();
+                    }
+                }
+            });
+
+            // If player landed safely on a block, make sure they remain grounded
+            if (isStandingOnAnyBlock) {
+                player.isGrounded = true;
+            }
+
+            // Calculate active game progress percentage
+            const endTile = activeLevelData.tiles.find(t => t[2] === TILE_END);
+            const levelEndX = endTile ? endTile[0] * GRID_SIZE : player.x + 3000;
+            const progress = Math.min(Math.max(Math.floor((player.x / levelEndX) * 100), 0), 100);
+            
+            document.getElementById('game-progress-bar').style.width = `${progress}%`;
+            document.getElementById('game-progress-text').textContent = `${progress}%`;
+        }
+
+        // Crash state logic
+        function handlePlayerCrash() {
+            playSynthesizedSound('crash');
+            
+            if (isPracticeMode && checkpoints.length > 0) {
+                // Restore last saved practice state checkpoint
+                const latest = checkpoints[checkpoints.length - 1];
+                player.x = latest.x;
+                player.y = latest.y;
+                player.vy = latest.vy;
+                player.mode = latest.mode;
+                player.rotation = latest.rotation;
+                player.isGrounded = latest.isGrounded;
+                player.isJumping = latest.isJumping;
+
+                // Set layout tags
+                document.getElementById('game-mode-tag').textContent = player.mode === 'CUBE' ? '🍉 CUBE MODE' : '🛸 SHIP MODE';
+                document.getElementById('game-mode-tag').className = player.mode === 'CUBE' ? 'text-emerald-400 font-extrabold' : 'text-pink-400 font-extrabold';
+                
+                triggerSparkParticles(player.x, player.y);
+            } else {
+                // Dead completely. Full restart of level required!
+                isPlaying = false;
+                songAudioElement.pause();
+                
+                // Show status overlay card
+                const overlay = document.getElementById('status-card-overlay');
+                overlay.classList.remove('hidden');
+                document.getElementById('status-icon').textContent = '💥';
+                document.getElementById('status-title').textContent = 'CRASHED!';
+                document.getElementById('status-desc').textContent = "Don't give up, little melon! Turn on Practice Mode to place safety flags along your route.";
+            }
+        }
+
+        function handleLevelWin() {
+            isPlaying = false;
+            songAudioElement.pause();
+
+            // Clear layout flags
+            checkpoints = [];
+
+            const overlay = document.getElementById('status-card-overlay');
+            overlay.classList.remove('hidden');
+            document.getElementById('status-icon').textContent = '🏆';
+            document.getElementById('status-title').textContent = 'LEVEL COMPLETE!';
+            document.getElementById('status-desc').textContent = `Sensational jumps! You conquered "${activeLevelData.title}"! Try designing custom challenges in the Level Editor now.`;
+        }
+
+        // Render Canvas assets
+        function drawGameplay() {
+            if (isEditorActive) return;
+
+            // Shift background hue color slowly
+            backgroundHue = (backgroundHue + 0.1) % 360;
+
+            // Clear with dynamic sky color gradient matching Cocomelon styling
+            const skyGrad = ctx.createLinearGradient(0, 0, 0, CANVAS_HEIGHT);
+            skyGrad.addColorStop(0, `hsl(${backgroundHue}, 90%, 82%)`);
+            skyGrad.addColorStop(1, `hsl(${(backgroundHue + 40) % 360}, 90%, 92%)`);
+            ctx.fillStyle = skyGrad;
+            ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+
+            // Draw scrolling pastel background mountain hills (Parallax depth layers)
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+            for (let i = 0; i < 4; i++) {
+                const hillOffset = (player.x * 0.15 + i * 300) % 1000;
+                ctx.beginPath();
+                ctx.arc(400 - hillOffset, 360, 180, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            // Draw Cute Smiling Cloud
+            const cloudOffset = (player.x * 0.08) % 900;
+            ctx.fillStyle = '#ffffff';
+            ctx.beginPath();
+            ctx.arc(600 - cloudOffset, 80, 30, 0, Math.PI * 2);
+            ctx.arc(640 - cloudOffset, 80, 40, 0, Math.PI * 2);
+            ctx.arc(680 - cloudOffset, 80, 30, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Draw cartoon smile on cloud
+            ctx.strokeStyle = '#64748b';
+            ctx.lineWidth = 2.5;
+            ctx.beginPath();
+            ctx.arc(640 - cloudOffset, 84, 8, 0, Math.PI);
+            ctx.stroke();
+
+            // Camera offset scroll focus
+            const cameraScrollX = player.x - 100;
+
+            // Render level design assets
+            activeLevelData.tiles.forEach(tile => {
+                const [tx, ty, tType] = tile;
+                const tileScreenX = tx * GRID_SIZE - cameraScrollX;
+
+                // Keep rendering lightweight: only draw inside viewport
+                if (tileScreenX >= -GRID_SIZE && tileScreenX <= CANVAS_WIDTH) {
+                    drawTileSymbol(tType, tileScreenX, ty * GRID_SIZE, GRID_SIZE, GRID_SIZE);
+                }
+            });
+
+            // Draw practice checkpoint safety flags
+            if (isPracticeMode) {
+                checkpoints.forEach((cp, index) => {
+                    const cpScreenX = cp.x - cameraScrollX;
+                    ctx.fillStyle = '#10b981';
+                    ctx.fillRect(cpScreenX + 12, cp.y - 12, 3, 44);
+                    // Flag triangle
+                    ctx.fillStyle = '#34d399';
+                    ctx.beginPath();
+                    ctx.moveTo(cpScreenX + 15, cp.y - 12);
+                    ctx.lineTo(cpScreenX + 30, cp.y - 5);
+                    ctx.lineTo(cpScreenX + 15, cp.y + 2);
+                    ctx.closePath();
+                    ctx.fill();
+                });
+            }
+
+            // Draw Level floor lines
+            const floorY = CANVAS_HEIGHT - GRID_SIZE;
+            ctx.fillStyle = '#a7f3d0'; // Cute mint floor color
+            ctx.fillRect(0, floorY, CANVAS_WIDTH, GRID_SIZE);
+            ctx.strokeStyle = '#059669';
+            ctx.lineWidth = 4;
+            ctx.beginPath();
+            ctx.moveTo(0, floorY);
+            ctx.lineTo(CANVAS_WIDTH, floorY);
+            ctx.stroke();
+
+            // Render Active Particles
+            updateAndDrawParticles();
+
+            // Draw the Player (Cocomelon mascot!)
+            ctx.save();
+            ctx.translate(100 + player.width/2, player.y + player.height/2);
+            ctx.rotate(player.rotation);
+
+            if (player.mode === 'CUBE') {
+                // Drawing the cute watermelon Cocomelon design
+                ctx.fillStyle = '#10b981'; // Outer watermelon green rind
+                ctx.strokeStyle = '#047857';
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.roundRect(-player.width/2, -player.height/2, player.width, player.height, 8);
+                ctx.fill();
+                ctx.stroke();
+
+                // Innards (Pink melon flesh)
+                ctx.fillStyle = '#fb7185';
+                ctx.beginPath();
+                ctx.roundRect(-player.width/2 + 4, -player.height/2 + 4, player.width - 8, player.height - 8, 6);
+                ctx.fill();
+
+                // Cheek Blush
+                ctx.fillStyle = '#ffb3c1';
+                ctx.beginPath();
+                ctx.arc(-8, 4, 3, 0, Math.PI * 2);
+                ctx.arc(8, 4, 3, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Mascot Eyes
+                ctx.fillStyle = '#1e293b';
+                ctx.beginPath();
+                ctx.arc(-7, -2, 3, 0, Math.PI * 2);
+                ctx.arc(7, -2, 3, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Eyes white glow
+                ctx.fillStyle = '#ffffff';
+                ctx.beginPath();
+                ctx.arc(-8, -3, 1, 0, Math.PI * 2);
+                ctx.arc(6, -3, 1, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Mouth
+                ctx.strokeStyle = '#1e293b';
+                ctx.lineWidth = 1.8;
+                ctx.beginPath();
+                ctx.arc(0, 2, 4, 0, Math.PI);
+                ctx.stroke();
+
+                // TV antennae representation of Cocomelon
+                ctx.fillStyle = '#047857';
+                ctx.fillRect(-2, -player.height/2 - 6, 4, 6);
+                ctx.fillStyle = '#f43f5e';
+                ctx.beginPath();
+                ctx.arc(0, -player.height/2 - 7, 3, 0, Math.PI*2);
+                ctx.fill();
+            } 
+            else {
+                // SHIP MODE: Watermelon sitting in a cute little pink spacecraft!
+                // Spacecraft dome glass
+                ctx.fillStyle = 'rgba(191, 219, 254, 0.7)';
+                ctx.beginPath();
+                ctx.arc(0, -6, 12, Math.PI, 0);
+                ctx.fill();
+
+                // Sitting Watermelon Head
+                ctx.fillStyle = '#10b981';
+                ctx.beginPath();
+                ctx.arc(0, -3, 7, 0, Math.PI*2);
+                ctx.fill();
+                ctx.fillStyle = '#fb7185';
+                ctx.beginPath();
+                ctx.arc(0, -3, 5, 0, Math.PI*2);
+                ctx.fill();
+                // Cute tiny black eyes
+                ctx.fillStyle = '#1e293b';
+                ctx.fillRect(-3, -5, 2, 2);
+                ctx.fillRect(1, -5, 2, 2);
+
+                // Spacecraft saucer base body
+                ctx.fillStyle = '#f472b6'; // Hot pink saucer
+                ctx.strokeStyle = '#db2777';
+                ctx.lineWidth = 2.5;
+                ctx.beginPath();
+                ctx.ellipse(0, 6, 20, 8, 0, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.stroke();
+
+                // Yellow warning indicator lights
+                ctx.fillStyle = '#fde047';
+                ctx.beginPath();
+                ctx.arc(-10, 6, 2, 0, Math.PI*2);
+                ctx.arc(0, 6, 2, 0, Math.PI*2);
+                ctx.arc(10, 6, 2, 0, Math.PI*2);
+                ctx.fill();
+            }
+
+            ctx.restore();
+        }
+
+        // Main Animation Loop Tick
+        function gameTick() {
+            if (isEditorActive) {
+                // Draw Level Editor elements
+                drawEditorCanvas();
+            } else {
+                // Draw Gameplay updates
+                updatePhysics();
+                drawGameplay();
+            }
+
+            requestAnimationFrame(gameTick);
+        }
+
+        // Action Triggering Level selection start
+        function startGameWithLevel(index) {
+            currentLevelIndex = index;
+            // Deep clone active prebuilt structures
+            activeLevelData = JSON.parse(JSON.stringify(PREBUILT_LEVELS[index]));
+            
+            // Reset physical player parameters
+            player.x = 100;
+            player.y = 200;
+            player.vy = 0;
+            player.vx = activeLevelData.speed || 6.0;
+            player.mode = 'CUBE';
+            player.rotation = 0;
+            player.isGrounded = false;
+            
+            checkpoints = []; // Clear old practice runs
+
+            document.getElementById('game-mode-tag').textContent = '🍉 CUBE MODE';
+            document.getElementById('game-mode-tag').className = 'text-emerald-400 font-extrabold';
+            document.getElementById('level-title-display').textContent = activeLevelData.title;
+
+            // Hide startup overlays
+            document.getElementById('start-overlay').classList.add('hidden');
+            document.getElementById('status-card-overlay').classList.add('hidden');
+            document.getElementById('game-ui-overlay').classList.remove('hidden');
+
+            isEditorActive = false;
+            isPlaying = true;
+            isPaused = false;
+
+            // Start music track playback
+            const activePreset = document.getElementById('song-preset-select').value;
+            loadMusicTrack(SONG_PRESETS[activePreset]);
+            songAudioElement.play().catch(e => {
+                console.warn("Autoplay block prevented background track. Will run normally on user tap/interaction.", e);
+            });
+        }
+
+        // Editor Test Drive Playtest Action
+        function startEditorPlaytest() {
+            // Re-clone existing canvas workspace level values
+            player.x = 100;
+            player.y = 200;
+            player.vy = 0;
+            player.vx = 6.0;
+            player.mode = 'CUBE';
+            player.rotation = 0;
+            player.isGrounded = false;
+
+            // Ensure we have a valid end finish flag. If not, auto append one at the end of the workspace
+            const hasEnd = activeLevelData.tiles.some(t => t[2] === TILE_END);
+            if (!hasEnd) {
+                // Place finish line automatically 40 cells ahead of the furthest tile block
+                let maxX = 50;
+                activeLevelData.tiles.forEach(t => {
+                    if (t[0] > maxX) maxX = t[0];
+                });
+                activeLevelData.tiles.push([maxX + 15, 9, TILE_END]);
+            }
+
+            document.getElementById('level-title-display').textContent = "Playtesting Custom Level";
+            document.getElementById('start-overlay').classList.add('hidden');
+            document.getElementById('status-card-overlay').classList.add('hidden');
+            document.getElementById('game-ui-overlay').classList.remove('hidden');
+
+            isEditorActive = false;
+            isPlaying = true;
+            isPaused = false;
+
+            // Start playing active song
+            const activePreset = document.getElementById('song-preset-select').value;
+            loadMusicTrack(SONG_PRESETS[activePreset]);
+            songAudioElement.play().catch(e => {});
+        }
+
+        // Initialize buttons, defaults and start active engines on load
+        window.onload = function() {
+            // Setup layouts and editors
+            setupEditorUI();
+            registerControls();
+            initWebSongAPI();
+
+            // Set default music active target track
+            loadMusicTrack(SONG_PRESETS['happy_arcade']);
+
+            // Dashboard buttons routing
+            document.getElementById('btn-menu-play').onclick = () => {
+                isEditorActive = false;
+                isPlaying = false;
+                document.getElementById('start-overlay').classList.remove('hidden');
+                document.getElementById('status-card-overlay').classList.add('hidden');
+                document.getElementById('game-ui-overlay').classList.add('hidden');
+                songAudioElement.pause();
+            };
+
+            document.getElementById('btn-menu-editor').onclick = () => {
+                isEditorActive = true;
+                isPlaying = false;
+                document.getElementById('start-overlay').classList.add('hidden');
+                document.getElementById('status-card-overlay').classList.add('hidden');
+                document.getElementById('game-ui-overlay').classList.add('hidden');
+                songAudioElement.pause();
+                drawEditorCanvas();
+                
+                showModal("Level Editor Enabled!", "Create your custom Cocomelon obstacle levels!<br><br>🎨 Paint grid tiles using your mouse brush.<br>⚙️ Pick different spikes, springs, fly portals and blocks inside the sidebar.<br>🚀 Click Playtest to test run your custom creation instantly!");
+            };
+
+            // Quick button events in game card overlay
+            document.getElementById('btn-status-retry').onclick = () => {
+                if (isEditorActive) {
+                    startEditorPlaytest();
+                } else {
+                    startGameWithLevel(currentLevelIndex);
+                }
+            };
+
+            document.getElementById('btn-status-close').onclick = () => {
+                document.getElementById('btn-menu-play').click();
+            };
+
+            // In-game Pause button
+            document.getElementById('btn-pause-toggle').onclick = () => {
+                isPaused = !isPaused;
+                if (isPaused) {
+                    songAudioElement.pause();
+                    document.getElementById('btn-pause-toggle').innerHTML = '<i class="fa-solid fa-play"></i>';
+                } else {
+                    songAudioElement.play().catch(e => {});
+                    document.getElementById('btn-pause-toggle').innerHTML = '<i class="fa-solid fa-pause"></i>';
+                }
+            };
+
+            // Editor clear grid canvas action
+            document.getElementById('btn-editor-clear').onclick = () => {
+                activeLevelData.tiles = [];
+                drawEditorCanvas();
+                showModal("Canvas Cleared", "The layout design has been reset! Get creative painting brand new melon runs.");
+            };
+
+            // Playtest custom map click handler
+            document.getElementById('btn-editor-playtest').onclick = () => {
+                startEditorPlaytest();
+            };
+
+            // Import/Export bindings
+            document.getElementById('btn-level-export').onclick = exportLevelToJSON;
+            document.getElementById('btn-level-import').onclick = importLevelFromJSON;
+
+            // Start animation canvas loop update ticks
+            gameTick();
+        };
+    </script>
+</body>
+</html>
