@@ -1,0 +1,1314 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Toy Story 5 Interactive Tablet</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts for Toy Story feel -->
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Quicksand:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Quicksand', sans-serif;
+      background-color: #0c1020;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+    .toy-title {
+      font-family: 'Fredoka One', cursive;
+    }
+    /* Cloud background matching Andy's wall */
+    .andy-clouds {
+      background-color: #5cbbf6;
+      background-image: 
+        radial-gradient(ellipse at 30% 20%, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.9) 10%, transparent 20%),
+        radial-gradient(ellipse at 40% 25%, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.9) 15%, transparent 30%),
+        radial-gradient(ellipse at 25% 28%, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.9) 12%, transparent 25%),
+        radial-gradient(ellipse at 75% 60%, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.9) 10%, transparent 20%),
+        radial-gradient(ellipse at 85% 65%, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.9) 15%, transparent 30%),
+        radial-gradient(ellipse at 70% 68%, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.9) 12%, transparent 25%);
+    }
+    /* Custom Scrollbar for Toy Drawer */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: rgba(0, 0, 0, 0.1);
+      border-radius: 10px;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.4);
+      border-radius: 10px;
+    }
+    /* Animations */
+    @keyframes bounce-slow {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+    .animate-bounce-slow {
+      animation: bounce-slow 3s infinite ease-in-out;
+    }
+    .toy-glow {
+      box-shadow: 0 0 15px rgba(251, 191, 36, 0.6);
+    }
+    .alien-ears {
+      animation: ear-wiggle 2s infinite alternate;
+    }
+    @keyframes ear-wiggle {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(5deg); }
+    }
+  </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-2 md:p-6 overflow-hidden">
+
+  <!-- Main Tablet Shell -->
+  <div class="relative w-full max-w-5xl h-[92vh] max-h-[800px] bg-slate-800 rounded-[3rem] p-4 md:p-6 shadow-2xl border-4 border-slate-700 flex flex-col justify-between">
+    
+    <!-- Tablet Top Bezel (Camera & Sensor) -->
+    <div class="absolute top-2 left-1/2 -translate-x-1/2 flex items-center gap-3 z-20">
+      <div class="w-2 h-2 rounded-full bg-slate-900"></div>
+      <div class="w-12 h-1.5 rounded-full bg-slate-900"></div>
+      <div class="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></div>
+    </div>
+
+    <!-- Screen Area -->
+    <div id="tablet-screen" class="relative w-full h-full rounded-[2rem] overflow-hidden flex flex-col transition-all duration-500 andy-clouds select-none">
+      
+      <!-- Status Bar -->
+      <div class="w-full bg-black/20 text-white px-6 py-1.5 flex justify-between items-center text-xs font-semibold z-10">
+        <span id="tablet-time" class="tracking-wider">10:15 AM</span>
+        <div class="flex items-center gap-1.5">
+          <span class="text-[10px] bg-yellow-400 text-slate-900 px-1.5 py-0.5 rounded-full font-bold">ToyOS 5.0</span>
+          <div class="flex items-center gap-1">
+            <span id="battery-level">99%</span>
+            <svg class="w-5 h-5 fill-current text-green-400" viewBox="0 0 24 24"><path d="M16 20H8V6h8v14M16.5 3h-2V1h-5v2h-2C6.67 3 6 3.67 6 4.5v16c0 .83.67 1.5 1.5 1.5h9c.83 0 1.5-.67 1.5-1.5v-16c0-.83-.67-1.5-1.5-1.5z"/></svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- ================= SCREEN 1: LOCK / POWER SCREEN ================= -->
+      <div id="screen-lock" class="absolute inset-0 z-30 flex flex-col items-center justify-center bg-slate-900/90 text-white p-6 text-center transition-all duration-500">
+        <div class="animate-bounce-slow mb-6">
+          <!-- Toy Story Classic Logo / Star -->
+          <svg class="w-28 h-28 mx-auto filter drop-shadow-lg" viewBox="0 0 100 100">
+            <polygon points="50,5 64,36 98,36 70,57 81,91 50,70 19,91 30,57 2,36 36,36" fill="#FBBF24" stroke="#DC2626" stroke-width="4"/>
+            <text x="50" y="58" font-family="'Fredoka One'" font-size="22" fill="#1E3A8A" text-anchor="middle" font-weight="bold">5</text>
+          </svg>
+        </div>
+        <h1 class="toy-title text-4xl md:text-5xl text-yellow-300 tracking-wide drop-shadow-[0_4px_4px_rgba(0,0,0,0.8)]">
+          TOY STORY 5
+        </h1>
+        <p class="text-blue-200 mt-2 text-lg font-medium tracking-wide">Interactive Play Tablet</p>
+        
+        <button onclick="unlockTablet()" class="mt-8 px-8 py-4 bg-gradient-to-r from-yellow-400 to-orange-500 text-slate-900 font-extrabold text-xl rounded-2xl shadow-lg hover:scale-105 active:scale-95 transition-all flex items-center gap-3 border-b-4 border-orange-700">
+          <svg class="w-6 h-6 fill-current animate-pulse" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.53c-.26-.81-1-1.4-1.9-1.4h-1v-3c0-.55-.45-1-1-1h-6v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.4z"/></svg>
+          TAP TO PLAY!
+        </button>
+        <p class="text-xs text-slate-400 mt-6 font-mono">Turn on your speakers for toy sound effects! 🔊</p>
+      </div>
+
+      <!-- ================= SCREEN 2: HOME SCREEN ================= -->
+      <div id="screen-home" class="hidden flex-1 p-6 flex flex-col justify-between overflow-y-auto">
+        <!-- Welcoming Header -->
+        <div class="flex justify-between items-start">
+          <div>
+            <h2 class="text-2xl md:text-3xl text-slate-900 font-extrabold drop-shadow-sm flex items-center gap-2">
+              Hey, Space Ranger! <span class="animate-bounce">👋</span>
+            </h2>
+            <p class="text-sm text-slate-700 font-semibold mt-1">Tap an app to start playing!</p>
+          </div>
+          <!-- Little custom Toy Profile -->
+          <div class="flex items-center gap-2 bg-white/40 px-3 py-1.5 rounded-full backdrop-blur-sm border border-white/20">
+            <span class="text-xs font-bold text-slate-800">Bonnie's Room</span>
+            <div class="w-6 h-6 rounded-full bg-amber-400 flex items-center justify-center text-xs font-extrabold text-amber-900">B</div>
+          </div>
+        </div>
+
+        <!-- App Icon Grid -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-6 my-auto py-6 max-w-4xl mx-auto w-full">
+          <!-- App 1: Buzz Ranger Game -->
+          <button onclick="launchApp('ranger')" class="group flex flex-col items-center gap-2 focus:outline-none">
+            <div class="w-20 h-20 md:w-24 md:h-24 rounded-2xl bg-gradient-to-tr from-purple-600 via-indigo-700 to-green-500 p-1 shadow-lg group-hover:scale-105 active:scale-95 transition-all relative">
+              <div class="w-full h-full bg-slate-900 rounded-[1.2rem] flex flex-col items-center justify-center overflow-hidden">
+                <!-- Buzz helmet SVG -->
+                <svg class="w-14 h-14" viewBox="0 0 64 64">
+                  <circle cx="32" cy="32" r="24" fill="none" stroke="#22C55E" stroke-width="2"/>
+                  <path d="M16 32 C16 18, 48 18, 48 32 C48 40, 16 40, 16 32" fill="#E2E8F0"/>
+                  <!-- Visor -->
+                  <path d="M20 28 Q32 18 44 28" fill="none" stroke="#A855F7" stroke-width="4"/>
+                  <circle cx="32" cy="32" r="8" fill="#A855F7" opacity="0.3"/>
+                  <polygon points="32,22 35,28 29,28" fill="#EF4444" />
+                </svg>
+              </div>
+              <span class="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] px-1.5 py-0.5 rounded-full font-bold animate-pulse">PLAY</span>
+            </div>
+            <span class="text-xs md:text-sm font-bold text-slate-800 tracking-wide drop-shadow-sm group-hover:text-slate-900">Space Ranger</span>
+          </button>
+
+          <!-- App 2: Toy Maker -->
+          <button onclick="launchApp('maker')" class="group flex flex-col items-center gap-2 focus:outline-none">
+            <div class="w-20 h-20 md:w-24 md:h-24 rounded-2xl bg-gradient-to-tr from-yellow-400 to-amber-500 p-1 shadow-lg group-hover:scale-105 active:scale-95 transition-all">
+              <div class="w-full h-full bg-slate-50 rounded-[1.2rem] flex items-center justify-center overflow-hidden relative">
+                <!-- Forky / craft look -->
+                <svg class="w-16 h-16" viewBox="0 0 64 64">
+                  <!-- Spork shape -->
+                  <path d="M28 44 L36 44 L36 20 L40 12 L36 14 L34 10 L32 14 L30 10 L28 14 L24 12 L28 20 Z" fill="#E2E8F0" stroke="#94A3B8" stroke-width="1.5"/>
+                  <!-- Eyes -->
+                  <circle cx="29" cy="22" r="3.5" fill="white" stroke="black"/>
+                  <circle cx="29" cy="22" r="1.5" fill="black"/>
+                  <circle cx="35" cy="20" r="5" fill="white" stroke="black"/>
+                  <circle cx="34" cy="20" r="2.5" fill="black"/>
+                  <!-- Red unibrow -->
+                  <path d="M26 15 Q32 18 38 14" fill="none" stroke="#EF4444" stroke-width="2.5" stroke-linecap="round"/>
+                  <!-- Blue mouth -->
+                  <path d="M28 29 Q32 35 36 28" fill="none" stroke="#3B82F6" stroke-width="3" stroke-linecap="round"/>
+                </svg>
+              </div>
+            </div>
+            <span class="text-xs md:text-sm font-bold text-slate-800 tracking-wide drop-shadow-sm group-hover:text-slate-900">Toy Lab</span>
+          </button>
+
+          <!-- App 3: Soundboard -->
+          <button onclick="launchApp('sounds')" class="group flex flex-col items-center gap-2 focus:outline-none">
+            <div class="w-20 h-20 md:w-24 md:h-24 rounded-2xl bg-gradient-to-tr from-rose-500 to-orange-500 p-1 shadow-lg group-hover:scale-105 active:scale-95 transition-all">
+              <div class="w-full h-full bg-amber-100 rounded-[1.2rem] flex items-center justify-center overflow-hidden">
+                <!-- Cowboy hat / Sheriff badge SVG -->
+                <svg class="w-14 h-14" viewBox="0 0 64 64">
+                  <!-- Star -->
+                  <polygon points="32,8 38,24 55,24 41,34 46,50 32,40 18,50 23,34 9,24 26,24" fill="#F59E0B" stroke="#B45309" stroke-width="2"/>
+                  <!-- Circle tip accents for sheriff star -->
+                  <circle cx="32" cy="8" r="2" fill="#B45309"/>
+                  <circle cx="55" cy="24" r="2" fill="#B45309"/>
+                  <circle cx="46" cy="50" r="2" fill="#B45309"/>
+                  <circle cx="18" cy="50" r="2" fill="#B45309"/>
+                  <circle cx="9" cy="24" r="2" fill="#B45309"/>
+                </svg>
+              </div>
+            </div>
+            <span class="text-xs md:text-sm font-bold text-slate-800 tracking-wide drop-shadow-sm group-hover:text-slate-900">Toy Box Sound</span>
+          </button>
+
+          <!-- App 4: Memory Matching -->
+          <button onclick="launchApp('match')" class="group flex flex-col items-center gap-2 focus:outline-none">
+            <div class="w-20 h-20 md:w-24 md:h-24 rounded-2xl bg-gradient-to-tr from-cyan-400 to-blue-600 p-1 shadow-lg group-hover:scale-105 active:scale-95 transition-all">
+              <div class="w-full h-full bg-slate-900 rounded-[1.2rem] flex flex-col items-center justify-center overflow-hidden">
+                <!-- Alien Pizza Planet claw look -->
+                <svg class="w-12 h-12" viewBox="0 0 64 64">
+                  <path d="M32 8 C18 8, 12 28, 12 40 C12 50, 20 54, 32 54 C44 54, 52 50, 52 40 C52 28, 46 8, 32 8" fill="#10B981"/>
+                  <circle cx="32" cy="20" r="4" fill="white"/>
+                  <circle cx="22" cy="24" r="4" fill="white"/>
+                  <circle cx="42" cy="24" r="4" fill="white"/>
+                  <circle cx="32" cy="20" r="2" fill="black"/>
+                  <circle cx="22" cy="24" r="2" fill="black"/>
+                  <circle cx="42" cy="24" r="2" fill="black"/>
+                  <path d="M22 38 Q32 46 42 38" fill="none" stroke="white" stroke-width="3" stroke-linecap="round"/>
+                </svg>
+              </div>
+            </div>
+            <span class="text-xs md:text-sm font-bold text-slate-800 tracking-wide drop-shadow-sm group-hover:text-slate-900">Alien Match</span>
+          </button>
+        </div>
+
+        <!-- Desktop Dock Area -->
+        <div class="w-full max-w-md mx-auto bg-white/30 backdrop-blur-md p-3 rounded-3xl flex justify-around items-center border border-white/20 shadow-md">
+          <button onclick="playSythSound('click')" class="w-12 h-12 rounded-xl bg-sky-100 flex items-center justify-center hover:scale-105 active:scale-95 transition-all shadow">
+            <svg class="w-6 h-6 text-sky-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+          </button>
+          <button onclick="playSythSound('power')" class="w-12 h-12 rounded-xl bg-amber-100 flex items-center justify-center hover:scale-105 active:scale-95 transition-all shadow">
+            <svg class="w-6 h-6 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+          </button>
+          <button onclick="toggleMute()" id="mute-btn" class="w-12 h-12 rounded-xl bg-emerald-100 flex items-center justify-center hover:scale-105 active:scale-95 transition-all shadow">
+            <svg id="volume-icon" class="w-6 h-6 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072M18.364 5.636a9 9 0 010 12.728M12 18.75V5.25L7.75 9.5H4.5v5h3.25L12 18.75z"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- ================= APP 1: SPACE RANGER BATTLE ================= -->
+      <div id="app-ranger" class="hidden flex-1 flex flex-col bg-slate-950 text-white relative">
+        <!-- Game Header -->
+        <div class="p-3 bg-indigo-900 flex justify-between items-center border-b border-indigo-700">
+          <div class="flex items-center gap-2">
+            <button onclick="goHome()" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 rounded-lg text-xs font-bold transition-all">◀ Home</button>
+            <span class="text-sm font-extrabold text-green-400">STAR COMMAND MISSION</span>
+          </div>
+          <div class="text-right">
+            <span class="text-xs text-indigo-300">SCORE:</span>
+            <span id="ranger-score" class="font-mono text-lg font-bold text-yellow-400">0</span>
+          </div>
+        </div>
+
+        <!-- Game Workspace -->
+        <div class="flex-1 relative overflow-hidden bg-slate-900" id="game-container">
+          <!-- Custom Laser Canvas / Layer -->
+          <canvas id="ranger-canvas" class="absolute inset-0 w-full h-full z-0 pointer-events-none"></canvas>
+
+          <!-- Interactive Buzz Ship -->
+          <div id="buzz-ship" class="absolute bottom-6 left-1/2 -translate-x-1/2 w-16 h-16 cursor-pointer touch-none z-10 transition-transform duration-75">
+            <!-- Buzz Space Ship SVG -->
+            <svg class="w-full h-full filter drop-shadow-[0_0_10px_#22C55E]" viewBox="0 0 64 64">
+              <!-- Wings -->
+              <path d="M4 42 L12 28 L52 28 L60 42 Z" fill="#22C55E" />
+              <!-- Wingtips -->
+              <rect x="2" y="38" width="4" height="8" rx="2" fill="#EF4444" />
+              <rect x="58" y="38" width="4" height="8" rx="2" fill="#EF4444" />
+              <!-- Body -->
+              <path d="M22 52 L42 52 L38 12 L32 4 L26 12 Z" fill="#FFFFFF" stroke="#94A3B8" stroke-width="2"/>
+              <!-- Canopy -->
+              <path d="M26 24 C26 18, 38 18, 38 24 L38 34 C38 38, 26 38, 26 34 Z" fill="#A855F7" opacity="0.8"/>
+              <!-- Laser Guns -->
+              <rect x="18" y="24" width="2" height="8" fill="#EF4444" />
+              <rect x="44" y="24" width="2" height="8" fill="#EF4444" />
+            </svg>
+          </div>
+
+          <!-- Stars / Floating Space Junk targets inside container -->
+          <div id="target-layer" class="absolute inset-0"></div>
+
+          <!-- Instructions HUD Overlay -->
+          <div id="ranger-start-hud" class="absolute inset-0 bg-slate-950/80 flex flex-col items-center justify-center text-center p-4 z-20">
+            <svg class="w-20 h-20 text-purple-400 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122"/></svg>
+            <h3 class="toy-title text-2xl text-yellow-300 mt-4">ALIEN DEFENSE INITIATIVE</h3>
+            <p class="text-sm text-slate-300 max-w-sm mt-2">Tap/Drag Buzz to move. Blaster fires automatically! Destroy incoming Zurg batteries and asteroids.</p>
+            <button onclick="startRangerGame()" class="mt-6 px-6 py-3 bg-green-500 hover:bg-green-400 text-slate-900 font-extrabold rounded-xl shadow-lg transition-all">LAUNCH MISSION!</button>
+          </div>
+        </div>
+
+        <!-- Touch Controller for Mobile -->
+        <div class="h-16 bg-slate-950 border-t border-indigo-900/50 flex justify-between items-center px-4 py-2 z-10">
+          <span class="text-[10px] text-slate-400 font-mono">DRAG SHIP LEFT/RIGHT TO AIM & FLY</span>
+          <div class="flex gap-2">
+            <button id="move-left-btn" class="w-12 h-10 bg-indigo-900 hover:bg-indigo-800 rounded-lg flex items-center justify-center font-bold text-white">&larr;</button>
+            <button id="move-right-btn" class="w-12 h-10 bg-indigo-900 hover:bg-indigo-800 rounded-lg flex items-center justify-center font-bold text-white">&rarr;</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ================= APP 2: SPORK & SMART-TOY LAB ================= -->
+      <div id="app-maker" class="hidden flex-1 flex flex-col bg-amber-50 relative overflow-hidden">
+        <!-- Header -->
+        <div class="p-4 bg-yellow-400 flex justify-between items-center shadow-sm">
+          <div class="flex items-center gap-2">
+            <button onclick="goHome()" class="px-3 py-1.5 bg-yellow-600 hover:bg-yellow-700 text-white rounded-lg text-xs font-bold transition-all shadow-sm">◀ Home</button>
+            <span class="text-sm font-extrabold text-slate-900">TOY STORY CREATIVE LAB</span>
+          </div>
+          <span class="text-xs bg-amber-200 text-amber-900 px-2 py-1 rounded-full font-bold">Smart-Toy Suite</span>
+        </div>
+
+        <!-- Designer workspace Split -->
+        <div class="flex-1 flex flex-col md:flex-row">
+          
+          <!-- Left: Preview Canvas -->
+          <div class="flex-1 bg-white/60 p-4 flex flex-col items-center justify-center relative border-b md:border-b-0 md:border-r border-amber-200">
+            <!-- Background wallpaper grid for designer vibe -->
+            <div class="absolute inset-0 bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] [background-size:16px_16px] opacity-40"></div>
+            
+            <div class="relative z-10 w-64 h-64 bg-white rounded-3xl shadow-inner border border-amber-100 flex items-center justify-center" id="custom-toy-display">
+              <!-- Custom Toy Model built dynamically -->
+              <div id="toy-assembler" class="relative w-full h-full flex flex-col items-center justify-center">
+                <!-- Spork Body Base -->
+                <div id="part-body" class="absolute transition-all duration-300">
+                  <svg class="w-32 h-32" viewBox="0 0 64 64">
+                    <path d="M28 48 L36 48 L35 24 L41 12 L36 14 L33 9 L31 14 L28 9 L26 14 L22 12 L27 24 Z" fill="#E2E8F0" stroke="#94A3B8" stroke-width="2"/>
+                    <!-- Clay base feet -->
+                    <path d="M18 52 C18 45, 46 45, 46 52 C46 56, 18 56, 18 52" fill="#38BDF8"/>
+                    <path d="M28 48 L25 53 M34 48 L37 53" stroke="#F59E0B" stroke-width="2.5" stroke-linecap="round"/>
+                  </svg>
+                </div>
+                <!-- Eyes slot -->
+                <div id="part-eyes" class="absolute -translate-y-8 flex gap-1 z-20">
+                  <div class="w-5 h-5 bg-white rounded-full border border-black flex items-center justify-center">
+                    <div class="w-2 h-2 bg-black rounded-full transition-all"></div>
+                  </div>
+                  <div class="w-7 h-7 bg-white rounded-full border border-black flex items-center justify-center">
+                    <div class="w-3.5 h-3.5 bg-black rounded-full transition-all"></div>
+                  </div>
+                </div>
+                <!-- Mouth slot -->
+                <div id="part-mouth" class="absolute -translate-y-1 z-20">
+                  <svg class="w-10 h-6" viewBox="0 0 40 24">
+                    <path d="M10 8 Q20 18 30 8" fill="none" stroke="#EF4444" stroke-width="4" stroke-linecap="round"/>
+                  </svg>
+                </div>
+                <!-- Extra Decor (Hats, bows) -->
+                <div id="part-decor" class="absolute -translate-y-16 z-30">
+                  <!-- Empty by default -->
+                </div>
+                <!-- Arms / Pipe cleaners -->
+                <div id="part-arms" class="absolute -translate-y-4 w-full flex justify-between px-6 z-10">
+                  <svg class="w-16 h-12 -scale-x-100" viewBox="0 0 64 48">
+                    <path d="M2 10 Q24 24 48 12 Q56 22 40 32" fill="none" stroke="#EF4444" stroke-width="4" stroke-linecap="round"/>
+                  </svg>
+                  <svg class="w-16 h-12" viewBox="0 0 64 48">
+                    <path d="M2 10 Q24 24 48 12 Q56 22 40 32" fill="none" stroke="#EF4444" stroke-width="4" stroke-linecap="round"/>
+                  </svg>
+                </div>
+              </div>
+            </div>
+
+            <!-- Custom Toy Title input -->
+            <div class="mt-4 relative w-full max-w-xs">
+              <input type="text" id="toy-name-input" value="Forky II" class="w-full text-center font-extrabold text-slate-800 bg-white border-2 border-yellow-300 rounded-xl py-1.5 px-4 focus:outline-none focus:ring-2 focus:ring-amber-500" placeholder="Name your Toy!">
+            </div>
+          </div>
+
+          <!-- Right: Customizer Controls Panel -->
+          <div class="flex-1 p-4 bg-white flex flex-col justify-between overflow-y-auto max-h-[300px] md:max-h-none">
+            <div class="space-y-4">
+              <span class="text-xs font-bold text-slate-500 uppercase tracking-widest">Toy Assembly Station</span>
+              
+              <!-- 1. Body Selection -->
+              <div>
+                <label class="block text-xs font-bold text-slate-700 mb-1.5">1. Base Model</label>
+                <div class="grid grid-cols-3 gap-2">
+                  <button onclick="setToyPart('body', 'spork')" class="py-2 bg-yellow-100 hover:bg-yellow-200 text-xs font-extrabold text-slate-800 rounded-lg border-2 border-yellow-300">Spork Base</button>
+                  <button onclick="setToyPart('body', 'robot')" class="py-2 bg-slate-100 hover:bg-slate-200 text-xs font-extrabold text-slate-800 rounded-lg border border-slate-200">Retro Bot</button>
+                  <button onclick="setToyPart('body', 'wood')" class="py-2 bg-amber-50 hover:bg-amber-100 text-xs font-extrabold text-slate-800 rounded-lg border border-amber-200">Wood Block</button>
+                </div>
+              </div>
+
+              <!-- 2. Eyes -->
+              <div>
+                <label class="block text-xs font-bold text-slate-700 mb-1.5">2. Googly Eyes</label>
+                <div class="grid grid-cols-3 gap-2">
+                  <button onclick="setToyPart('eyes', 'googly')" class="py-2 bg-indigo-50 hover:bg-indigo-100 text-xs font-bold text-indigo-900 rounded-lg">Googly Classic</button>
+                  <button onclick="setToyPart('eyes', 'cool')" class="py-2 bg-emerald-50 hover:bg-emerald-100 text-xs font-bold text-emerald-900 rounded-lg">Sci-Fi Visor</button>
+                  <button onclick="setToyPart('eyes', 'cute')" class="py-2 bg-pink-50 hover:bg-pink-100 text-xs font-bold text-pink-900 rounded-lg">Anime Stars</button>
+                </div>
+              </div>
+
+              <!-- 3. Mouth expression -->
+              <div>
+                <label class="block text-xs font-bold text-slate-700 mb-1.5">3. Expression</label>
+                <div class="grid grid-cols-3 gap-2">
+                  <button onclick="setToyPart('mouth', 'smile')" class="py-2 bg-sky-50 hover:bg-sky-100 text-xs font-bold text-sky-900 rounded-lg">Happy Smile</button>
+                  <button onclick="setToyPart('mouth', 'surprised')" class="py-2 bg-purple-50 hover:bg-purple-100 text-xs font-bold text-purple-900 rounded-lg">Whoa!</button>
+                  <button onclick="setToyPart('mouth', 'smirk')" class="py-2 bg-rose-50 hover:bg-rose-100 text-xs font-bold text-rose-900 rounded-lg">Cheeky Grin</button>
+                </div>
+              </div>
+
+              <!-- 4. Accessories -->
+              <div>
+                <label class="block text-xs font-bold text-slate-700 mb-1.5">4. Accessories</label>
+                <div class="grid grid-cols-3 gap-2">
+                  <button onclick="setToyPart('decor', 'hat')" class="py-2 bg-yellow-100 hover:bg-yellow-200 text-xs font-bold text-yellow-900 rounded-lg">Cowboy Hat</button>
+                  <button onclick="setToyPart('decor', 'bow')" class="py-2 bg-red-100 hover:bg-red-200 text-xs font-bold text-red-900 rounded-lg">Cute Bow</button>
+                  <button onclick="setToyPart('decor', 'none')" class="py-2 bg-slate-100 hover:bg-slate-200 text-xs font-bold text-slate-800 rounded-lg">No Access.</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="pt-4 flex gap-2">
+              <button onclick="bringToyToLife()" class="flex-1 py-3 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-400 hover:to-emerald-500 text-white font-extrabold text-sm rounded-xl shadow-md transition-all flex items-center justify-center gap-2">
+                <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
+                BRING TO LIFE!
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ================= APP 3: SOUNDBOARD & CHARACTER DIALOGUE ================= -->
+      <div id="app-sounds" class="hidden flex-1 flex flex-col bg-sky-900 text-white relative">
+        <!-- Header -->
+        <div class="p-4 bg-rose-600 flex justify-between items-center">
+          <div class="flex items-center gap-2">
+            <button onclick="goHome()" class="px-3 py-1.5 bg-rose-800 hover:bg-rose-950 rounded-lg text-xs font-bold transition-all">◀ Home</button>
+            <span class="text-sm font-extrabold">TOYBOX TALKBOX</span>
+          </div>
+          <span class="text-xs bg-rose-400/40 px-2 py-0.5 rounded-full font-mono">Tap a character!</span>
+        </div>
+
+        <div class="flex-1 p-6 grid grid-cols-2 gap-4 overflow-y-auto max-w-3xl mx-auto w-full items-center">
+          <!-- Card 1: Woody -->
+          <button onclick="playCharacterSound('woody')" class="group bg-gradient-to-br from-amber-500 to-amber-600 p-4 rounded-2xl shadow-lg border-2 border-amber-400/50 hover:scale-105 transition-all text-left flex gap-3 items-center">
+            <div class="w-16 h-16 rounded-full bg-yellow-100 flex items-center justify-center shrink-0 border-2 border-yellow-300">
+              <svg class="w-12 h-12" viewBox="0 0 64 64">
+                <!-- Cowboy hat shape -->
+                <path d="M12 40 Q32 30 52 40 Q32 46 12 40" fill="#78350F" />
+                <path d="M22 36 Q32 16 42 36 Z" fill="#92400E" />
+                <circle cx="32" cy="46" r="6" fill="#FCD34D"/>
+              </svg>
+            </div>
+            <div>
+              <h4 class="font-extrabold text-lg text-white">Sheriff Woody</h4>
+              <p class="text-xs text-amber-100 font-medium">"Reach for the sky!"</p>
+            </div>
+          </button>
+
+          <!-- Card 2: Buzz -->
+          <button onclick="playCharacterSound('buzz')" class="group bg-gradient-to-br from-indigo-700 to-indigo-800 p-4 rounded-2xl shadow-lg border-2 border-purple-500/50 hover:scale-105 transition-all text-left flex gap-3 items-center">
+            <div class="w-16 h-16 rounded-full bg-purple-100 flex items-center justify-center shrink-0 border-2 border-purple-300">
+              <svg class="w-12 h-12" viewBox="0 0 64 64">
+                <circle cx="32" cy="32" r="16" fill="#E2E8F0" stroke="#22C55E" stroke-width="2"/>
+                <path d="M22 28 Q32 18 42 28" fill="none" stroke="#A855F7" stroke-width="3"/>
+                <circle cx="32" cy="32" r="5" fill="#3B82F6"/>
+              </svg>
+            </div>
+            <div>
+              <h4 class="font-extrabold text-lg text-white">Buzz Lightyear</h4>
+              <p class="text-xs text-indigo-100 font-medium">"To infinity... and beyond!"</p>
+            </div>
+          </button>
+
+          <!-- Card 3: Rex -->
+          <button onclick="playCharacterSound('rex')" class="group bg-gradient-to-br from-emerald-600 to-emerald-700 p-4 rounded-2xl shadow-lg border-2 border-emerald-400/50 hover:scale-105 transition-all text-left flex gap-3 items-center">
+            <div class="w-16 h-16 rounded-full bg-emerald-100 flex items-center justify-center shrink-0 border-2 border-emerald-300">
+              <svg class="w-12 h-12" viewBox="0 0 64 64">
+                <!-- Dinosaur tail/head outline -->
+                <path d="M16 44 Q32 12 48 32 C52 38, 44 48, 24 48 Z" fill="#047857"/>
+                <circle cx="38" cy="24" r="3" fill="white"/>
+                <circle cx="38" cy="24" r="1" fill="black"/>
+                <path d="M38 34 H44" stroke="black" stroke-width="2"/>
+              </svg>
+            </div>
+            <div>
+              <h4 class="font-extrabold text-lg text-white">Rex</h4>
+              <p class="text-xs text-emerald-100 font-medium">"I'm a fierce dinosaur!"</p>
+            </div>
+          </button>
+
+          <!-- Card 4: Slinky -->
+          <button onclick="playCharacterSound('slinky')" class="group bg-gradient-to-br from-amber-700 to-amber-900 p-4 rounded-2xl shadow-lg border-2 border-amber-600/50 hover:scale-105 transition-all text-left flex gap-3 items-center">
+            <div class="w-16 h-16 rounded-full bg-amber-100 flex items-center justify-center shrink-0 border-2 border-amber-300">
+              <svg class="w-12 h-12" viewBox="0 0 64 64">
+                <!-- Spring look -->
+                <path d="M12 32 Q22 20 32 32 Q42 44 52 32" fill="none" stroke="#4B5563" stroke-width="3"/>
+                <circle cx="16" cy="32" r="4" fill="#B45309"/>
+                <circle cx="48" cy="32" r="4" fill="#B45309"/>
+              </svg>
+            </div>
+            <div>
+              <h4 class="font-extrabold text-lg text-white">Slinky Dog</h4>
+              <p class="text-xs text-amber-200 font-medium">"Golly bob-howdy!"</p>
+            </div>
+          </button>
+        </div>
+      </div>
+
+      <!-- ================= APP 4: MEMORY MATCHING ================= -->
+      <div id="app-match" class="hidden flex-1 flex flex-col bg-emerald-950 text-white relative">
+        <!-- Header -->
+        <div class="p-4 bg-emerald-600 flex justify-between items-center">
+          <div class="flex items-center gap-2">
+            <button onclick="goHome()" class="px-3 py-1.5 bg-emerald-800 hover:bg-emerald-900 rounded-lg text-xs font-bold transition-all">◀ Home</button>
+            <span class="text-sm font-extrabold">ALIEN PAIRS MINIGAME</span>
+          </div>
+          <div class="text-right flex items-center gap-4">
+            <span class="text-xs text-emerald-100" id="match-moves">MOVES: 0</span>
+            <button onclick="initMatchGame()" class="px-2.5 py-1 bg-yellow-400 text-slate-900 rounded-md font-extrabold text-xs">RESET</button>
+          </div>
+        </div>
+
+        <div class="flex-1 p-4 flex flex-col justify-center items-center">
+          <!-- Game Board Grid -->
+          <div id="match-board" class="grid grid-cols-4 gap-3 max-w-md w-full aspect-square">
+            <!-- Dynamic Cards generated here -->
+          </div>
+        </div>
+      </div>
+
+      <!-- ================= POPUP NOTIFICATION MODAL ================= -->
+      <div id="custom-modal" class="hidden absolute inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
+        <div class="bg-white rounded-3xl p-6 max-w-sm w-full text-center shadow-2xl border-4 border-yellow-400">
+          <div id="modal-icon" class="w-20 h-20 mx-auto flex items-center justify-center bg-yellow-100 rounded-full text-yellow-600 text-4xl mb-4">
+            ⭐️
+          </div>
+          <h3 id="modal-title" class="toy-title text-2xl text-slate-800">You did it!</h3>
+          <p id="modal-desc" class="text-slate-600 mt-2 text-sm font-medium">Your customized Toy Story 5 toy has arrived in Bonnie's toy chest!</p>
+          <button onclick="closeModal()" class="mt-6 w-full py-3 bg-gradient-to-r from-yellow-400 to-amber-500 hover:from-yellow-300 hover:to-amber-400 text-slate-900 font-extrabold rounded-xl transition-all shadow-md">Awesome!</button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Tablet Home Button (Physical feel) -->
+    <button onclick="goHome()" class="mt-3 mx-auto w-10 h-10 rounded-full border-2 border-slate-600 flex items-center justify-center hover:bg-slate-700 active:scale-95 transition-all focus:outline-none shrink-0" aria-label="Home Button">
+      <div class="w-3.5 h-3.5 rounded-sm border border-slate-500"></div>
+    </button>
+  </div>
+
+  <!-- Audio Context and Sound synthesis logic -->
+  <script>
+    // Web Audio Synthesizer for Retro Toy Sound Effects
+    let audioCtx = null;
+    let isMuted = false;
+
+    function initAudio() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+    }
+
+    function playSythSound(type) {
+      if (isMuted) return;
+      initAudio();
+      if (!audioCtx) return;
+
+      const osc = audioCtx.createOscillator();
+      const gainNode = audioCtx.createGain();
+      osc.connect(gainNode);
+      gainNode.connect(audioCtx.destination);
+
+      const now = audioCtx.currentTime;
+
+      if (type === 'unlock') {
+        // Futuristic tablet startup melody
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(261.63, now); // C4
+        osc.frequency.setValueAtTime(329.63, now + 0.1); // E4
+        osc.frequency.setValueAtTime(392.00, now + 0.2); // G4
+        osc.frequency.setValueAtTime(523.25, now + 0.3); // C5
+        gainNode.gain.setValueAtTime(0.2, now);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.6);
+        osc.start(now);
+        osc.stop(now + 0.6);
+      } else if (type === 'click') {
+        // Simple tap sound
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(600, now);
+        osc.frequency.exponentialRampToValueAtTime(150, now + 0.1);
+        gainNode.gain.setValueAtTime(0.3, now);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+        osc.start(now);
+        osc.stop(now + 0.1);
+      } else if (type === 'laser') {
+        // Space blast sound
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(800, now);
+        osc.frequency.exponentialRampToValueAtTime(80, now + 0.2);
+        gainNode.gain.setValueAtTime(0.15, now);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
+        osc.start(now);
+        osc.stop(now + 0.2);
+      } else if (type === 'explosion') {
+        // Low impact sound
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(120, now);
+        osc.frequency.exponentialRampToValueAtTime(30, now + 0.3);
+        gainNode.gain.setValueAtTime(0.4, now);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+        osc.start(now);
+        osc.stop(now + 0.3);
+      } else if (type === 'success') {
+        // Happy level up fanfare
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(392, now);
+        osc.frequency.setValueAtTime(523, now + 0.1);
+        osc.frequency.setValueAtTime(659, now + 0.2);
+        osc.frequency.setValueAtTime(784, now + 0.3);
+        gainNode.gain.setValueAtTime(0.25, now);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.5);
+        osc.start(now);
+        osc.stop(now + 0.5);
+      } else if (type === 'match-success') {
+        // Pair matching chime
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(523.25, now);
+        osc.frequency.setValueAtTime(659.25, now + 0.08);
+        gainNode.gain.setValueAtTime(0.2, now);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
+        osc.start(now);
+        osc.stop(now + 0.25);
+      } else if (type === 'power') {
+        // System beep
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(440, now);
+        gainNode.gain.setValueAtTime(0.15, now);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
+        osc.start(now);
+        osc.stop(now + 0.15);
+      }
+    }
+
+    function toggleMute() {
+      isMuted = !isMuted;
+      const volumeIcon = document.getElementById('volume-icon');
+      const muteBtn = document.getElementById('mute-btn');
+      if (isMuted) {
+        volumeIcon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2" />`;
+        muteBtn.className = "w-12 h-12 rounded-xl bg-rose-100 flex items-center justify-center hover:scale-105 active:scale-95 transition-all shadow";
+      } else {
+        volumeIcon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072M18.364 5.636a9 9 0 010 12.728M12 18.75V5.25L7.75 9.5H4.5v5h3.25L12 18.75z"/>`;
+        muteBtn.className = "w-12 h-12 rounded-xl bg-emerald-100 flex items-center justify-center hover:scale-105 active:scale-95 transition-all shadow";
+        playSythSound('click');
+      }
+    }
+
+    // Custom Character Voices using Synthetic audio sweeps
+    function playCharacterSound(char) {
+      if (isMuted) return;
+      initAudio();
+      if (!audioCtx) return;
+
+      const now = audioCtx.currentTime;
+      const osc1 = audioCtx.createOscillator();
+      const osc2 = audioCtx.createOscillator();
+      const gainNode = audioCtx.createGain();
+
+      osc1.connect(gainNode);
+      osc2.connect(gainNode);
+      gainNode.connect(audioCtx.destination);
+
+      if (char === 'woody') {
+        // Woody: Cowboy whip / slide sound
+        osc1.type = 'sawtooth';
+        osc1.frequency.setValueAtTime(200, now);
+        osc1.frequency.exponentialRampToValueAtTime(1200, now + 0.3);
+        
+        osc2.type = 'triangle';
+        osc2.frequency.setValueAtTime(300, now);
+        osc2.frequency.exponentialRampToValueAtTime(900, now + 0.3);
+
+        gainNode.gain.setValueAtTime(0.2, now);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.4);
+
+        osc1.start(now);
+        osc1.stop(now + 0.4);
+        osc2.start(now);
+        osc2.stop(now + 0.4);
+      } else if (char === 'buzz') {
+        // Buzz: Space-age scanner / laser beam combo
+        osc1.type = 'sine';
+        osc1.frequency.setValueAtTime(800, now);
+        osc1.frequency.linearRampToValueAtTime(1000, now + 0.15);
+        osc1.frequency.linearRampToValueAtTime(600, now + 0.3);
+
+        osc2.type = 'square';
+        osc2.frequency.setValueAtTime(400, now);
+        osc2.frequency.exponentialRampToValueAtTime(1200, now + 0.3);
+
+        gainNode.gain.setValueAtTime(0.15, now);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.35);
+
+        osc1.start(now);
+        osc1.stop(now + 0.35);
+        osc2.start(now);
+        osc2.stop(now + 0.35);
+      } else if (char === 'rex') {
+        // Rex: Funny dinosaur growl (modulated square wave)
+        osc1.type = 'square';
+        osc1.frequency.setValueAtTime(150, now);
+        osc1.frequency.linearRampToValueAtTime(100, now + 0.1);
+        osc1.frequency.linearRampToValueAtTime(220, now + 0.2);
+        osc1.frequency.linearRampToValueAtTime(80, now + 0.35);
+
+        gainNode.gain.setValueAtTime(0.3, now);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.4);
+
+        osc1.start(now);
+        osc1.stop(now + 0.4);
+      } else if (char === 'slinky') {
+        // Slinky: Springy bouncing metallic wave
+        osc1.type = 'sine';
+        osc1.frequency.setValueAtTime(400, now);
+        osc1.frequency.exponentialRampToValueAtTime(150, now + 0.1);
+        osc1.frequency.exponentialRampToValueAtTime(400, now + 0.2);
+        osc1.frequency.exponentialRampToValueAtTime(150, now + 0.3);
+        osc1.frequency.exponentialRampToValueAtTime(300, now + 0.4);
+
+        gainNode.gain.setValueAtTime(0.25, now);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.45);
+
+        osc1.start(now);
+        osc1.stop(now + 0.45);
+      }
+    }
+
+    // Keep tablet system time up to date
+    function updateTabletTime() {
+      const now = new Date();
+      let hours = now.getHours();
+      let minutes = now.getMinutes();
+      const ampm = hours >= 12 ? 'PM' : 'AM';
+      hours = hours % 12;
+      hours = hours ? hours : 12; // the hour '0' should be '12'
+      minutes = minutes < 10 ? '0'+minutes : minutes;
+      const strTime = hours + ':' + minutes + ' ' + ampm;
+      const timeEl = document.getElementById('tablet-time');
+      if (timeEl) timeEl.textContent = strTime;
+    }
+    setInterval(updateTabletTime, 30000);
+    updateTabletTime();
+
+    // ================= TABLET NAVIGATION & SCREEN STATE =================
+    let currentAppId = null;
+
+    function unlockTablet() {
+      playSythSound('unlock');
+      const lockScreen = document.getElementById('screen-lock');
+      const homeScreen = document.getElementById('screen-home');
+      lockScreen.classList.add('hidden');
+      homeScreen.classList.remove('hidden');
+    }
+
+    function goHome() {
+      playSythSound('click');
+      // Hide all apps
+      const apps = ['app-ranger', 'app-maker', 'app-sounds', 'app-match'];
+      apps.forEach(app => document.getElementById(app).classList.add('hidden'));
+      
+      // Stop mini games if running
+      stopRangerGame();
+
+      // Show Home Screen
+      document.getElementById('screen-home').classList.remove('hidden');
+      document.getElementById('screen-lock').classList.add('hidden');
+      currentAppId = null;
+    }
+
+    function launchApp(appType) {
+      playSythSound('click');
+      document.getElementById('screen-home').classList.add('hidden');
+      
+      if (appType === 'ranger') {
+        document.getElementById('app-ranger').classList.remove('hidden');
+        resetRangerGame();
+      } else if (appType === 'maker') {
+        document.getElementById('app-maker').classList.remove('hidden');
+      } else if (appType === 'sounds') {
+        document.getElementById('app-sounds').classList.remove('hidden');
+      } else if (appType === 'match') {
+        document.getElementById('app-match').classList.remove('hidden');
+        initMatchGame();
+      }
+      currentAppId = appType;
+    }
+
+    // Custom Modal System
+    function showModal(title, desc, icon) {
+      const modal = document.getElementById('custom-modal');
+      document.getElementById('modal-title').textContent = title;
+      document.getElementById('modal-desc').textContent = desc;
+      document.getElementById('modal-icon').textContent = icon || '⭐️';
+      modal.classList.remove('hidden');
+      playSythSound('success');
+    }
+
+    function closeModal() {
+      playSythSound('click');
+      document.getElementById('custom-modal').classList.add('hidden');
+    }
+
+
+    // ================= GAME 1: SPACE RANGER BATTLE =================
+    let rangerGameInterval = null;
+    let rangerScore = 0;
+    let targetSpawnTimer = null;
+    const targetLayer = document.getElementById('target-layer');
+    const buzzShip = document.getElementById('buzz-ship');
+    const gameContainer = document.getElementById('game-container');
+    const canvas = document.getElementById('ranger-canvas');
+    const ctx = canvas.getContext('2d');
+    let shipXPercent = 50; // percentage from left
+    let activeTargets = [];
+    let bulletInterval = null;
+
+    // Handle Ship Movement & Dragging
+    let isDraggingShip = false;
+
+    buzzShip.addEventListener('mousedown', () => isDraggingShip = true);
+    document.addEventListener('mouseup', () => isDraggingShip = false);
+    document.addEventListener('mousemove', (e) => {
+      if (!isDraggingShip) return;
+      moveShip(e.clientX);
+    });
+
+    // Touch support for dragging Buzz ship
+    buzzShip.addEventListener('touchstart', (e) => {
+      isDraggingShip = true;
+    }, {passive: true});
+    document.addEventListener('touchend', () => isDraggingShip = false);
+    document.addEventListener('touchmove', (e) => {
+      if (!isDraggingShip) return;
+      if (e.touches && e.touches[0]) {
+        moveShip(e.touches[0].clientX);
+      }
+    });
+
+    function moveShip(clientX) {
+      const rect = gameContainer.getBoundingClientRect();
+      let x = clientX - rect.left;
+      let percent = (x / rect.width) * 100;
+      percent = Math.max(5, Math.min(95, percent));
+      shipXPercent = percent;
+      buzzShip.style.left = `${percent}%`;
+    }
+
+    // Touch controls left/right buttons fallback
+    document.getElementById('move-left-btn').addEventListener('click', () => {
+      shipXPercent = Math.max(5, shipXPercent - 15);
+      buzzShip.style.left = `${shipXPercent}%`;
+      playSythSound('click');
+    });
+    document.getElementById('move-right-btn').addEventListener('click', () => {
+      shipXPercent = Math.min(95, shipXPercent + 15);
+      buzzShip.style.left = `${shipXPercent}%`;
+      playSythSound('click');
+    });
+
+    function resizeGameCanvas() {
+      canvas.width = gameContainer.clientWidth;
+      canvas.height = gameContainer.clientHeight;
+    }
+    window.addEventListener('resize', resizeGameCanvas);
+
+    function startRangerGame() {
+      playSythSound('click');
+      resizeGameCanvas();
+      document.getElementById('ranger-start-hud').classList.add('hidden');
+      rangerScore = 0;
+      document.getElementById('ranger-score').textContent = rangerScore;
+      activeTargets = [];
+      targetLayer.innerHTML = '';
+
+      // Game loops
+      rangerGameInterval = requestAnimationFrame(gameLoop);
+      targetSpawnTimer = setInterval(spawnTarget, 1000);
+      bulletInterval = setInterval(fireBullet, 350);
+    }
+
+    function resetRangerGame() {
+      stopRangerGame();
+      document.getElementById('ranger-start-hud').classList.remove('hidden');
+    }
+
+    function stopRangerGame() {
+      cancelAnimationFrame(rangerGameInterval);
+      clearInterval(targetSpawnTimer);
+      clearInterval(bulletInterval);
+      targetLayer.innerHTML = '';
+      activeTargets = [];
+      ctx.clearRect(0,0, canvas.width, canvas.height);
+    }
+
+    let lasers = [];
+
+    function fireBullet() {
+      const rect = gameContainer.getBoundingClientRect();
+      const startX = (shipXPercent / 100) * rect.width;
+      const startY = rect.height - 70;
+      
+      lasers.push({
+        x: startX,
+        y: startY,
+        speed: 8
+      });
+      playSythSound('laser');
+    }
+
+    function spawnTarget() {
+      const types = ['Zurg Bot', 'Meteor', 'Emperor Star'];
+      const type = types[Math.floor(Math.random() * types.length)];
+      const size = 48;
+      const startLeft = Math.random() * 85 + 5; // percentage
+
+      const targetEl = document.createElement('div');
+      targetEl.className = 'absolute w-12 h-12 top-[-50px] transition-all duration-75 select-none pointer-events-none';
+      targetEl.style.left = `${startLeft}%`;
+
+      // Draw beautiful SVG inside based on type
+      if (type === 'Zurg Bot') {
+        targetEl.innerHTML = `
+          <svg class="w-full h-full filter drop-shadow-[0_0_8px_#A855F7]" viewBox="0 0 64 64">
+            <polygon points="32,4 12,24 22,54 42,54 52,24" fill="#6B21A8" stroke="#D8B4FE" stroke-width="2"/>
+            <polygon points="32,20 22,12 42,12" fill="#EF4444"/>
+            <rect x="22" y="32" width="20" height="4" fill="#34D399"/>
+          </svg>
+        `;
+      } else if (type === 'Meteor') {
+        targetEl.innerHTML = `
+          <svg class="w-full h-full" viewBox="0 0 64 64">
+            <path d="M12 28 C8 44, 28 54, 48 44 C56 32, 48 12, 32 8 C22 6, 14 16, 12 28 Z" fill="#78350F"/>
+            <circle cx="22" cy="20" r="4" fill="#451A03"/>
+            <circle cx="38" cy="34" r="6" fill="#451A03"/>
+          </svg>
+        `;
+      } else {
+        // Star or Crystal target
+        targetEl.innerHTML = `
+          <svg class="w-full h-full animate-spin" viewBox="0 0 64 64" style="animation-duration: 4s;">
+            <polygon points="32,4 40,24 60,32 40,40 32,60 24,40 4,32 24,24" fill="#FBBF24" stroke="#D97706" stroke-width="1.5"/>
+          </svg>
+        `;
+      }
+
+      targetLayer.appendChild(targetEl);
+      activeTargets.push({
+        element: targetEl,
+        xPercent: startLeft,
+        y: -50,
+        speed: Math.random() * 2 + 1.5,
+        type: type
+      });
+    }
+
+    function gameLoop() {
+      const containerHeight = gameContainer.clientHeight;
+      const containerWidth = gameContainer.clientWidth;
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // 1. Move and Draw Lasers
+      ctx.fillStyle = '#EF4444';
+      for (let i = lasers.length - 1; i >= 0; i--) {
+        lasers[i].y -= lasers[i].speed;
+        
+        // Draw laser glows
+        ctx.shadowBlur = 10;
+        ctx.shadowColor = '#EF4444';
+        ctx.fillRect(lasers[i].x - 2, lasers[i].y, 4, 15);
+        ctx.shadowBlur = 0; // reset
+
+        if (lasers[i].y < 0) {
+          lasers.splice(i, 1);
+        }
+      }
+
+      // 2. Move targets & Check collisions
+      for (let i = activeTargets.length - 1; i >= 0; i--) {
+        const target = activeTargets[i];
+        target.y += target.speed;
+        target.element.style.top = `${target.y}px`;
+
+        const targetX = (target.xPercent / 100) * containerWidth;
+
+        // Check if target hit bottom
+        if (target.y > containerHeight) {
+          target.element.remove();
+          activeTargets.splice(i, 1);
+          continue;
+        }
+
+        // Collision Check with Lasers
+        let targetDestroyed = false;
+        for (let j = lasers.length - 1; j >= 0; j--) {
+          const laser = lasers[j];
+          // Simple bounding box check
+          if (
+            laser.x > targetX - 24 &&
+            laser.x < targetX + 24 &&
+            laser.y > target.y &&
+            laser.y < target.y + 48
+          ) {
+            // Explode target!
+            createExplosion(targetX, target.y);
+            playSythSound('explosion');
+            
+            target.element.remove();
+            activeTargets.splice(i, 1);
+            lasers.splice(j, 1);
+            
+            rangerScore += target.type === 'Emperor Star' ? 25 : 10;
+            document.getElementById('ranger-score').textContent = rangerScore;
+            
+            targetDestroyed = true;
+            break;
+          }
+        }
+
+        if (targetDestroyed) continue;
+
+        // Collision with Ship (Game Over condition trigger)
+        const shipX = (shipXPercent / 100) * containerWidth;
+        const shipY = containerHeight - 70;
+        if (
+          targetX > shipX - 32 &&
+          targetX < shipX + 32 &&
+          target.y > shipY - 32 &&
+          target.y < shipY + 40
+        ) {
+          // Player hit!
+          createExplosion(shipX, shipY);
+          playSythSound('explosion');
+          stopRangerGame();
+          showModal("MISSION COMPLETED!", `You defended Bonnie's tech desk and scored ${rangerScore} points! Ready for another launch, Ranger?`, "🚀");
+          break;
+        }
+      }
+
+      // 3. Update Explosions
+      updateExplosions();
+
+      if (currentAppId === 'ranger') {
+        rangerGameInterval = requestAnimationFrame(gameLoop);
+      }
+    }
+
+    // Dynamic explosion particles
+    let particles = [];
+    function createExplosion(x, y) {
+      for (let i = 0; i < 12; i++) {
+        particles.push({
+          x: x,
+          y: y,
+          vx: (Math.random() - 0.5) * 6,
+          vy: (Math.random() - 0.5) * 6,
+          radius: Math.random() * 4 + 2,
+          alpha: 1,
+          color: ['#FBBF24', '#EF4444', '#A855F7', '#34D399'][Math.floor(Math.random() * 4)]
+        });
+      }
+    }
+
+    function updateExplosions() {
+      for (let i = particles.length - 1; i >= 0; i--) {
+        const p = particles[i];
+        p.x += p.vx;
+        p.y += p.vy;
+        p.alpha -= 0.04;
+        
+        ctx.save();
+        ctx.globalAlpha = p.alpha;
+        ctx.fillStyle = p.color;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+
+        if (p.alpha <= 0) {
+          particles.splice(i, 1);
+        }
+      }
+    }
+
+
+    // ================= GAME 2: SPORK & SMART-TOY LAB =================
+    function setToyPart(category, type) {
+      playSythSound('click');
+      const bodySlot = document.getElementById('part-body');
+      const eyesSlot = document.getElementById('part-eyes');
+      const mouthSlot = document.getElementById('part-mouth');
+      const decorSlot = document.getElementById('part-decor');
+
+      if (category === 'body') {
+        if (type === 'spork') {
+          bodySlot.innerHTML = `
+            <svg class="w-32 h-32" viewBox="0 0 64 64">
+              <path d="M28 48 L36 48 L35 24 L41 12 L36 14 L33 9 L31 14 L28 9 L26 14 L22 12 L27 24 Z" fill="#E2E8F0" stroke="#94A3B8" stroke-width="2"/>
+              <path d="M18 52 C18 45, 46 45, 46 52 C46 56, 18 56, 18 52" fill="#38BDF8"/>
+              <path d="M28 48 L25 53 M34 48 L37 53" stroke="#F59E0B" stroke-width="2.5" stroke-linecap="round"/>
+            </svg>
+          `;
+        } else if (type === 'robot') {
+          bodySlot.innerHTML = `
+            <svg class="w-32 h-32" viewBox="0 0 64 64">
+              <rect x="20" y="16" width="24" height="24" rx="4" fill="#94A3B8" stroke="#475569" stroke-width="2"/>
+              <rect x="24" y="40" width="16" height="12" rx="2" fill="#64748B" stroke="#475569" stroke-width="2"/>
+              <circle cx="28" cy="24" r="2" fill="#EF4444"/>
+              <circle cx="36" cy="24" r="2" fill="#EF4444"/>
+            </svg>
+          `;
+        } else if (type === 'wood') {
+          bodySlot.innerHTML = `
+            <svg class="w-32 h-32" viewBox="0 0 64 64">
+              <rect x="18" y="14" width="28" height="38" rx="2" fill="#D97706" stroke="#78350F" stroke-width="2"/>
+              <!-- Wood ring decals -->
+              <path d="M24 20 C32 24, 28 32, 40 30" fill="none" stroke="#B45309" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+          `;
+        }
+      }
+
+      if (category === 'eyes') {
+        if (type === 'googly') {
+          eyesSlot.innerHTML = `
+            <div class="w-5 h-5 bg-white rounded-full border border-black flex items-center justify-center">
+              <div class="w-2 h-2 bg-black rounded-full animate-bounce"></div>
+            </div>
+            <div class="w-7 h-7 bg-white rounded-full border border-black flex items-center justify-center">
+              <div class="w-3.5 h-3.5 bg-black rounded-full animate-bounce"></div>
+            </div>
+          `;
+        } else if (type === 'cool') {
+          eyesSlot.innerHTML = `
+            <div class="w-16 h-5 bg-cyan-400 rounded-full border border-slate-700 flex items-center justify-center shadow-lg animate-pulse">
+              <div class="w-12 h-1 bg-white rounded-full"></div>
+            </div>
+          `;
+        } else if (type === 'cute') {
+          eyesSlot.innerHTML = `
+            <div class="text-xl">⭐️</div>
+            <div class="text-xl">⭐️</div>
+          `;
+        }
+      }
+
+      if (category === 'mouth') {
+        if (type === 'smile') {
+          mouthSlot.innerHTML = `
+            <svg class="w-10 h-6" viewBox="0 0 40 24">
+              <path d="M10 8 Q20 18 30 8" fill="none" stroke="#EF4444" stroke-width="4" stroke-linecap="round"/>
+            </svg>
+          `;
+        } else if (type === 'surprised') {
+          mouthSlot.innerHTML = `
+            <div class="w-5 h-5 bg-red-500 rounded-full border-2 border-black animate-ping"></div>
+          `;
+        } else if (type === 'smirk') {
+          mouthSlot.innerHTML = `
+            <svg class="w-10 h-6" viewBox="0 0 40 24">
+              <path d="M10 12 Q24 6 30 12" fill="none" stroke="#3B82F6" stroke-width="4" stroke-linecap="round"/>
+            </svg>
+          `;
+        }
+      }
+
+      if (category === 'decor') {
+        if (type === 'hat') {
+          decorSlot.innerHTML = `
+            <svg class="w-20 h-12" viewBox="0 0 64 36">
+              <path d="M4 28 Q32 18 60 28 Q32 34 4 28" fill="#B45309" />
+              <path d="M16 24 Q32 2 48 24 Z" fill="#78350F" />
+            </svg>
+          `;
+        } else if (type === 'bow') {
+          decorSlot.innerHTML = `
+            <svg class="w-12 h-8" viewBox="0 0 48 32">
+              <circle cx="24" cy="16" r="6" fill="#F43F5E"/>
+              <polygon points="12,6 20,16 12,26" fill="#E11D48"/>
+              <polygon points="36,6 28,16 36,26" fill="#E11D48"/>
+            </svg>
+          `;
+        } else {
+          decorSlot.innerHTML = '';
+        }
+      }
+    }
+
+    function bringToyToLife() {
+      const toyName = document.getElementById('toy-name-input').value || 'New Buddy';
+      showModal(
+        `CONGRATULATIONS!`,
+        `"${toyName}" has been loaded into Bonnie's Smart Toy Chest! Watch out, they're ready to start exploring when the humans leave the room! 🤫`,
+        "🎨"
+      );
+    }
+
+
+    // ================= GAME 3: MEMORY MATCHING =================
+    let cards = [];
+    let flippedCards = [];
+    let matchedPairs = 0;
+    let moves = 0;
+
+    const MATCH_ITEMS = [
+      { id: 1, name: 'woody', icon: `🤠` },
+      { id: 2, name: 'buzz', icon: `🚀` },
+      { id: 3, name: 'alien', icon: `👽` },
+      { id: 4, name: 'hamm', icon: `🐷` },
+      { id: 5, name: 'rex', icon: `🦖` },
+      { id: 6, name: 'slinky', icon: `🐶` },
+    ];
+
+    function initMatchGame() {
+      matchedPairs = 0;
+      moves = 0;
+      flippedCards = [];
+      document.getElementById('match-moves').textContent = `MOVES: ${moves}`;
+      
+      // Duplicate to create pairs
+      const cardList = [...MATCH_ITEMS, ...MATCH_ITEMS]
+        .map((item, index) => ({ ...item, uniqueId: index }))
+        .sort(() => Math.random() - 0.5);
+
+      const board = document.getElementById('match-board');
+      board.innerHTML = '';
+
+      cardList.forEach(cardData => {
+        const cardNode = document.createElement('button');
+        cardNode.dataset.id = cardData.uniqueId;
+        cardNode.dataset.name = cardData.name;
+        cardNode.className = "group relative w-full aspect-square bg-slate-800 border-2 border-emerald-500/40 rounded-2xl flex items-center justify-center text-4xl shadow-md transform transition-all duration-300 hover:scale-105 active:scale-95 cursor-pointer focus:outline-none";
+        
+        // Inside Card front and back
+        cardNode.innerHTML = `
+          <div class="card-inner w-full h-full flex items-center justify-center">
+            <!-- Back of Card (Shown) -->
+            <div class="card-back absolute inset-0 bg-gradient-to-tr from-emerald-700 to-indigo-800 rounded-2xl flex items-center justify-center border-2 border-yellow-300">
+              <span class="text-yellow-300 font-extrabold text-2xl tracking-tighter">?</span>
+            </div>
+            <!-- Front of Card (Hidden by default) -->
+            <div class="card-front hidden absolute inset-0 bg-white rounded-2xl flex items-center justify-center text-4xl">
+              ${cardData.icon}
+            </div>
+          </div>
+        `;
+
+        cardNode.addEventListener('click', () => handleCardClick(cardNode, cardData));
+        board.appendChild(cardNode);
+      });
+    }
+
+    function handleCardClick(cardNode, cardData) {
+      // Ignore if already matched or already selected
+      if (flippedCards.length >= 2 || cardNode.classList.contains('flipped') || cardNode.classList.contains('matched')) {
+        return;
+      }
+
+      playSythSound('click');
+      cardNode.classList.add('flipped');
+      
+      // Flip animations / toggle elements
+      cardNode.querySelector('.card-back').classList.add('hidden');
+      cardNode.querySelector('.card-front').classList.remove('hidden');
+
+      flippedCards.push({ node: cardNode, data: cardData });
+
+      if (flippedCards.length === 2) {
+        moves++;
+        document.getElementById('match-moves').textContent = `MOVES: ${moves}`;
+        checkForMatch();
+      }
+    }
+
+    function checkForMatch() {
+      const [card1, card2] = flippedCards;
+
+      if (card1.data.name === card2.data.name) {
+        // Match found!
+        card1.node.classList.add('matched');
+        card2.node.classList.add('matched');
+        
+        // Add fancy glow
+        card1.node.classList.add('ring-4', 'ring-yellow-400');
+        card2.node.classList.add('ring-4', 'ring-yellow-400');
+
+        matchedPairs++;
+        flippedCards = [];
+        playSythSound('match-success');
+
+        if (matchedPairs === MATCH_ITEMS.length) {
+          setTimeout(() => {
+            showModal(
+              "CLEARED LIKE A PRO!",
+              `You saved all Pizza Planet aliens in only ${moves} moves! The Claw is proud of you!`,
+              "🛸"
+            );
+          }, 500);
+        }
+      } else {
+        // No Match - Flip back after delay
+        setTimeout(() => {
+          card1.node.classList.remove('flipped');
+          card2.node.classList.remove('flipped');
+          
+          card1.node.querySelector('.card-back').classList.remove('hidden');
+          card1.node.querySelector('.card-front').classList.add('hidden');
+
+          card2.node.querySelector('.card-back').classList.remove('hidden');
+          card2.node.querySelector('.card-front').classList.add('hidden');
+
+          flippedCards = [];
+        }, 1000);
+      }
+    }
+  </script>
+</body>
+</html>
+
+```
